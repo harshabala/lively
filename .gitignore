@@ -17,3 +17,9 @@ Output.nosync/
 Output/
 .claude/worktrees/
 .DS_Store
+*.tsbuildinfo
+.claude/launch.json
+.superpowers/
+data/app-state.json
+data/app-state.json.lock
+storage/logs/

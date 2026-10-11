@@ -36,7 +36,7 @@ All task IDs listed above are implemented **or** explicitly documented as infeas
 
 ## Global constraints (apply to ALL work)
 
-Source: `~/Desktop/portfolio-implementation-plan-2026-07-10.md` and `~/Desktop/product-flow-metrics-task-list.md`.
+Source: `<local-path>` and `<local-path>`.
 
 1. **Local-first metrics** — counters/estimates on device or extension storage only. Nothing leaves unless user explicitly exports or opts in. **No cloud analytics in v1.**
 2. **One activation event** — named constant in code (e.g. `ACTIVATION_EVENT = '...'`).
@@ -80,10 +80,10 @@ Plain everyday words, zero jargon:
 
 | File | Why |
 |------|-----|
-| `~/Desktop/product-flow-metrics-task-list.md` | Original product task specs + metrics definitions |
-| `~/Desktop/pm-portfolio-analysis-lenny.md` | Why these metrics matter (senior PM framing) |
-| `~/Desktop/portfolio-implementation-plan-2026-07-10.md` | Multi-repo orchestration notes |
-| `~/Desktop/fable-portfolio-handoff/STATUS.md` | What Fable completed (mostly plans only) |
+| `<local-path>` | Original product task specs + metrics definitions |
+| `<local-path>` | Why these metrics matter (senior PM framing) |
+| `<local-path>` | Multi-repo orchestration notes |
+| `<local-path>` | What Fable completed (mostly plans only) |
 
 
 
