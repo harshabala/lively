@@ -12,3 +12,8 @@ DerivedData/
 Output/
 Output.nosync/
 *.xcuserstate
+
+.build/
+Output/
+.claude/worktrees/
+.DS_Store
