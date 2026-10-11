@@ -6,7 +6,7 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-teal.svg)](LICENSE)
 [![macOS 14+](https://img.shields.io/badge/macOS-14%2B-blue.svg)](https://www.apple.com/macos/)
-[![Release](https://github.com/harshabala/Lively/releases)](https://github.com/harshabala/Lively/releases)
+[![Release](https://img.shields.io/github/v/release/harshabala/lively)](https://github.com/harshabala/lively/releases)
 
 **Video wallpapers for your Mac.**
 
@@ -99,6 +99,17 @@ DMG with drag-to-Applications:
 ```
 
 Needs Xcode or Command Line Tools.
+
+## Develop and test
+
+Lively is a Swift package (`LivelyCore` library, `LivelyApp` executable, `LivelyTests`).
+
+```bash
+swift build      # debug build
+swift test       # unit tests (CI runs the same on macOS 15 / Xcode 26.3)
+```
+
+Release packaging lives in `scripts/release.sh`; `scripts/smoke_verify.sh` smoke-checks a built app.
 
 ## Privacy
 
