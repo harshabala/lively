@@ -10,7 +10,7 @@
 - Respect `accessibilityReduceMotion`
 - UserDefaults for first-run flags via `AppPreferences` or `AppMetrics`
 - Local commits OK; push only when user asks
-- Icon source: `/Users/harshabalakrishnan/Desktop/Lively app icon.png` → `icon.png` + `AppIcon.icns`
+- Icon source: `<local-path> app icon.png` → `icon.png` + `AppIcon.icns`
 - Installer: DMG with Applications folder drag-drop (no notarization)
 
 ## Tasks
