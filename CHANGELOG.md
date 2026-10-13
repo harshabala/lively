@@ -4,6 +4,14 @@ All notable changes to Lively are documented here. The format follows [Keep a Ch
 
 ## [Unreleased]
 
+### Added
+
+- Logs export now produces a redacted diagnostics report (versions, display count, settings, recent log, home paths replaced by `~`).
+- The app notices when the previous run ended unexpectedly and records it in the log and report.
+- Preferences carry a schema version for future migrations.
+- `scripts/release.sh --dry-run`, `scripts/check_hygiene.sh`, SwiftLint config, Dependabot for Actions, and documentation (architecture, contributing, security, privacy, releasing, sandbox readiness, performance).
+- The packaged `Info.plist` now takes its version from the repo `Info.plist`.
+
 ### Fixed
 
 - **Per-Space and per-display assignments were being deleted.** Switching Spaces, unplugging a monitor, or launching without it wiped the clips assigned to the Spaces/displays not currently visible. They now persist.
