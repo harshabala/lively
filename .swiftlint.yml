@@ -1,0 +1,30 @@
+# SwiftLint configuration. Not run in the audit environment (SwiftLint is not
+# installed there); CI installs it via Homebrew. Rules are tuned to the existing
+# code base so the first run is expected to be quiet; tighten over time.
+included:
+  - Sources
+  - Tests
+excluded:
+  - .build
+  - .agents
+disabled_rules:
+  - trailing_whitespace   # handled by editors; avoids noisy churn
+  - line_length           # SwiftUI view bodies are long by nature
+  - identifier_name
+  - type_name
+  - file_length
+  - type_body_length
+  - function_body_length
+  - cyclomatic_complexity
+  - large_tuple
+  - nesting
+opt_in_rules:
+  - empty_count
+  - force_unwrapping
+  - unused_import
+  - sorted_first_last
+  - explicit_init
+force_unwrapping:
+  severity: warning
+analyzer_rules:
+  - unused_import

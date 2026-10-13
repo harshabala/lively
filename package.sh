@@ -24,6 +24,9 @@ else
 fi
 
 # Configuration
+# Single source of truth for the version: Info.plist in the repo root.
+APP_VERSION="$(plutil -extract CFBundleShortVersionString raw Info.plist)"
+APP_BUILD="$(plutil -extract CFBundleVersion raw Info.plist)"
 APP_NAME="Lively"
 OUTPUT_DIR="${LIVELY_OUTPUT_DIR:-/private/tmp/LivelyOutput}"
 APP_BUNDLE="${OUTPUT_DIR}/${APP_NAME}.app"
@@ -91,12 +94,16 @@ cat > "${APP_BUNDLE}/Contents/Info.plist" <<EOF
     <string>com.lively.app</string>
     <key>CFBundleName</key>
     <string>${APP_NAME}</string>
+    <key>CFBundlePackageType</key>
+    <string>APPL</string>
+    <key>NSHighResolutionCapable</key>
+    <true/>
     <key>CFBundleIconFile</key>
     <string>AppIcon</string>
     <key>CFBundleShortVersionString</key>
-    <string>1.2.0</string>
+    <string>${APP_VERSION}</string>
     <key>CFBundleVersion</key>
-    <string>120</string>
+    <string>${APP_BUILD}</string>
     <key>LSMinimumSystemVersion</key>
     <string>14.0</string>
     <key>LSUIElement</key>
