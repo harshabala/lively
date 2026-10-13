@@ -35,7 +35,10 @@ fi
 
 # 4. Syntax checks.
 plutil -lint Info.plist entitlements.plist >/dev/null || note "plist lint failed"
-for f in package.sh test.sh scripts/*.sh; do bash -n "$f" || note "bash syntax: $f"; done
+for f in package.sh test.sh scripts/*.sh scripts/perf/*.sh; do
+  [[ -f "$f" ]] || continue
+  bash -n "$f" || note "bash syntax: $f"
+done
 
 # 5. Version sanity: Info.plist is the single source for package.sh.
 v="$(plutil -extract CFBundleShortVersionString raw Info.plist)"

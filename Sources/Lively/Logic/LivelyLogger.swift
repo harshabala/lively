@@ -116,4 +116,5 @@ public enum LivelyLogger {
     public static let videoPreview = LivelyCategoryLogger(category: "VideoPlayerView")
     public static let spaceMonitor = LivelyCategoryLogger(category: "SpaceMonitor")
     public static let updater = LivelyCategoryLogger(category: "Updater")
+    public static let perf = LivelyCategoryLogger(category: "Performance")
 }

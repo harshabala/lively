@@ -83,7 +83,9 @@ private final class WallpaperSession {
 
         currentURL = url
         failedURL = nil
-        loadVideo(url: url, muted: wallpaper.isMuted, volume: wallpaper.volume, onError: onError)
+        PerfSignposts.interval(PerfSignposts.playerBuild) {
+            loadVideo(url: url, muted: wallpaper.isMuted, volume: wallpaper.volume, onError: onError)
+        }
     }
 
     private func loadVideo(url: URL, muted: Bool, volume: Float, onError: @escaping @Sendable (Error) -> Void) {
@@ -215,13 +217,17 @@ private final class WallpaperSession {
     }
 
     func pause() {
-        wantsPlayback = false
-        updatePlaybackRate()
+        PerfSignposts.interval(PerfSignposts.pause) {
+            wantsPlayback = false
+            updatePlaybackRate()
+        }
     }
 
     func resume() {
-        wantsPlayback = true
-        updatePlaybackRate()
+        PerfSignposts.interval(PerfSignposts.resume) {
+            wantsPlayback = true
+            updatePlaybackRate()
+        }
     }
 
     private func occlusionDidChange() {
@@ -494,7 +500,9 @@ public final class WallpaperController: ObservableObject {
         } else {
             // Re-sync rather than just resuming, so any config or space changes
             // that arrived while paused are picked up immediately.
-            synchronize(to: spaceMonitor.screenSpaces)
+            PerfSignposts.interval(PerfSignposts.resume) {
+                synchronize(to: spaceMonitor.screenSpaces)
+            }
         }
     }
 
@@ -785,19 +793,21 @@ public final class WallpaperController: ObservableObject {
     private func synchronize(to spaces: [ScreenSpace]) {
         // NSApp is nil in unit test contexts — can't create windows without a running application
         guard let app = NSApp else { return }
-        let appearance = app.effectiveAppearance
-        sessionManager.synchronize(
-            to: spaces,
-            appearance: appearance,
-            configStore: configStore,
-            bookmarkManager: bookmarkManager,
-            isPaused: shouldHaltPlayback,
-            onPlaybackError: { [weak self] spaceKey, message in
-                Task { @MainActor in
-                    self?.playbackErrors.send((spaceKey, message))
+        PerfSignposts.interval(PerfSignposts.synchronize) {
+            let appearance = app.effectiveAppearance
+            sessionManager.synchronize(
+                to: spaces,
+                appearance: appearance,
+                configStore: configStore,
+                bookmarkManager: bookmarkManager,
+                isPaused: shouldHaltPlayback,
+                onPlaybackError: { [weak self] spaceKey, message in
+                    Task { @MainActor in
+                        self?.playbackErrors.send((spaceKey, message))
+                    }
                 }
-            }
-        )
+            )
+        }
     }
 }
 

@@ -10,7 +10,7 @@ import AppKit
 /// assignments) so preference toggles stay lightweight and independent.
 @MainActor
 public final class AppPreferences: ObservableObject {
-    public static let shared = AppPreferences()
+    public static let shared = AppPreferences(defaults: AppSupportPaths.perfUserDefaults())
 
     /// Hard floor: wallpapers always pause on battery at or below this level.
     nonisolated public static let forcedBatteryPausePercent: Double = 25
@@ -208,7 +208,7 @@ public final class AppPreferences: ObservableObject {
         didSet { defaults.set(hasSeenSpacesCoach, forKey: Keys.hasSeenSpacesCoach) }
     }
 
-    public init(defaults: UserDefaults = .standard) {
+    public init(defaults: UserDefaults = AppSupportPaths.perfUserDefaults()) {
         self.defaults = defaults
 
         func seedDefault(_ key: String, _ value: Any) {
