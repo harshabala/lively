@@ -24,7 +24,13 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
         configStore: configStore
     )
 
+    private let runMarker = RunMarker.default
+
     func applicationDidFinishLaunching(_ notification: Notification) {
+        if runMarker.begin() {
+            LogStore.shared.previousRunEndedUncleanly = true
+            LivelyLogger.config.error("Previous run ended unexpectedly (crash, force quit or power loss)")
+        }
         // Background-only process — no Dock icon
         NSApp.setActivationPolicy(.accessory)
 
@@ -38,6 +44,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
         removeEventMonitor()
         wallpaperController.tearDown()
         configStore.flushPendingPersist()
+        runMarker.end()
     }
 
     // MARK: - Menu Bar

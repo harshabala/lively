@@ -120,6 +120,7 @@ public final class AppPreferences: ObservableObject {
     }
 
     private enum Keys {
+        static let schemaVersion = "prefs.schemaVersion"
         static let startMinimized = "prefs.startMinimized"
         static let pauseOnBattery = "prefs.pauseOnBattery"
         static let batteryPauseThreshold = "prefs.batteryPauseThreshold"
@@ -136,6 +137,10 @@ public final class AppPreferences: ObservableObject {
         static let hasDismissedDisplaysTip = "prefs.hasDismissedDisplaysTip"
         static let hasSeenSpacesCoach = "prefs.hasSeenSpacesCoach"
     }
+
+    /// Bump when a stored preference changes meaning; add a step to `migrate`.
+    /// 0 = stores written before versioning existed.
+    nonisolated public static let currentSchemaVersion = 1
 
     private let defaults: UserDefaults
 
@@ -221,6 +226,8 @@ public final class AppPreferences: ObservableObject {
             defaults.set(true, forKey: Keys.updateCheckOptInMigrated)
         }
 
+        Self.migrate(defaults)
+
         self.startMinimized = defaults.bool(forKey: Keys.startMinimized)
         self.pauseOnBattery = defaults.bool(forKey: Keys.pauseOnBattery)
         self.checkForUpdates = defaults.bool(forKey: Keys.checkForUpdates)
@@ -267,6 +274,16 @@ public final class AppPreferences: ObservableObject {
         maxResolution = .matchSource
         appearance = .system
         defaults.removeObject(forKey: Keys.frameRateCapLegacy)
+    }
+
+    /// Runs once-per-version upgrades. Existing steps are idempotent so a store
+    /// that predates versioning (0) is upgraded exactly like any other.
+    nonisolated static func migrate(_ defaults: UserDefaults) {
+        let stored = defaults.integer(forKey: Keys.schemaVersion)
+        guard stored < currentSchemaVersion else { return }
+        // v0 -> v1: the legacy frame-rate cap became "max resolution".
+        // The value mapping lives in init; only record the version here.
+        defaults.set(currentSchemaVersion, forKey: Keys.schemaVersion)
     }
 
     nonisolated public static func clampThreshold(_ value: Double) -> Double {

@@ -14,6 +14,21 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  hygiene-and-lint:
+    runs-on: macos-15
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Repo hygiene (paths, secrets, duplicates, plists, scripts)
+        run: ./scripts/check_hygiene.sh
+
+      - name: SwiftLint
+        run: |
+          brew install swiftlint
+          swiftlint lint --reporter github-actions-logging
+
   build-and-test:
     # Same toolchain as release.yml so CI and shipped builds match.
     runs-on: macos-15

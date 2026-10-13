@@ -231,7 +231,7 @@ public struct LoggerView: View {
     private func copyLogs() {
         let pasteboard = NSPasteboard.general
         pasteboard.clearContents()
-        pasteboard.setString(logStore.allLogsFormatted, forType: .string)
+        pasteboard.setString(diagnosticsText(), forType: .string)
         isCopied = true
         Task { @MainActor in
             try? await Task.sleep(for: .seconds(2))
@@ -247,12 +247,29 @@ public struct LoggerView: View {
         panel.begin { response in
             guard response == .OK, let url = panel.url else { return }
             do {
-                try logStore.allLogsFormatted.write(to: url, atomically: true, encoding: .utf8)
+                try diagnosticsText().write(to: url, atomically: true, encoding: .utf8)
                 LivelyLogger.config.info("Exported logs to \(url.lastPathComponent)")
             } catch {
                 LivelyLogger.config.error("Failed to export logs: \(error.localizedDescription)")
             }
         }
+    }
+
+    /// Redacted support report (versions, display count, preferences, recent log).
+    private func diagnosticsText() -> String {
+        let prefs = AppPreferences.shared
+        return logStore.diagnosticsReport(
+            displayCount: NSScreen.screens.count,
+            preferences: [
+                "pauseOnBattery": String(prefs.pauseOnBattery),
+                "batteryPauseThreshold": String(Int(prefs.batteryPauseThreshold)),
+                "playbackQuality": prefs.playbackQuality.rawValue,
+                "loopBehavior": prefs.loopBehavior.rawValue,
+                "hardwareDecoding": String(prefs.hardwareDecoding),
+                "maxResolution": prefs.maxResolution.rawValue,
+                "checkForUpdates": String(prefs.checkForUpdates),
+            ]
+        )
     }
 
     private func dateStamp() -> String {

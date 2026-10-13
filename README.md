@@ -109,11 +109,19 @@ swift build      # debug build
 swift test       # unit tests (CI runs the same on macOS 15 / Xcode 26.3)
 ```
 
-Release packaging lives in `scripts/release.sh`; `scripts/smoke_verify.sh` smoke-checks a built app.
+With Command Line Tools only (no Xcode), use `./test.sh`. `./scripts/check_hygiene.sh` runs repo checks. See [CONTRIBUTING.md](CONTRIBUTING.md).
+
+Release packaging lives in `scripts/release.sh` (`--dry-run` builds without publishing); `scripts/smoke_verify.sh` smoke-checks a built app.
 
 ## Privacy
 
 Assignments stay on your Mac. Security-scoped bookmarks remember the files you chose. No analytics. Lively makes no network requests unless you turn on **Check for Updates** (off by default), which asks the GitHub Releases API for the latest version at launch. Note: Lively is not sandboxed (it has to draw below the desktop icons), so this is a promise kept by the code rather than enforced by an entitlement.
+
+Full policy: [PRIVACY.md](PRIVACY.md). Problems? Settings > Logs > Download Logs creates a redacted report (no file paths) you can attach to an issue.
+
+## More documentation
+
+[ARCHITECTURE.md](ARCHITECTURE.md), [CONTRIBUTING.md](CONTRIBUTING.md), [SECURITY.md](SECURITY.md), [docs/RELEASING.md](docs/RELEASING.md), [docs/SANDBOX_READINESS.md](docs/SANDBOX_READINESS.md), [docs/PERFORMANCE.md](docs/PERFORMANCE.md), [docs/PRODUCTION_READINESS.md](docs/PRODUCTION_READINESS.md).
 
 ## License
 

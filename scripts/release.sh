@@ -10,9 +10,12 @@ set -euo pipefail
 
 TAG="${1:-}"
 if [ -z "$TAG" ]; then
-  echo "Usage: ./scripts/release.sh <tag>   e.g. v1.0.0"
+  echo "Usage: ./scripts/release.sh <tag> [--dry-run]   e.g. v1.0.0"
+  echo "  --dry-run  build and zip locally; never contact GitHub"
   exit 1
 fi
+DRY_RUN=0
+[ "${2:-}" = "--dry-run" ] && DRY_RUN=1
 
 VERSION="${TAG#v}"
 ZIP="Lively-${VERSION}-macOS.zip"
@@ -29,7 +32,9 @@ ditto -c -k --sequesterRsrc --keepParent \
 SHA=$(shasum -a 256 "${ZIP}" | awk '{print $1}')
 echo "SHA256: ${SHA}"
 
-if command -v gh &>/dev/null; then
+if [ "$DRY_RUN" = "1" ]; then
+  echo "Dry run: skipping GitHub release upload."
+elif command -v gh &>/dev/null; then
   if ! gh release view "$TAG" --repo harshabala/Lively &>/dev/null; then
     gh release create "$TAG" --repo harshabala/Lively --title "Lively ${TAG}" \
       --notes-file CHANGELOG.md
