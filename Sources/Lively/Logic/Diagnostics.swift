@@ -97,9 +97,8 @@ public struct RunMarker: Sendable {
     }
 
     public static var `default`: RunMarker {
-        let base = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first
-            ?? FileManager.default.temporaryDirectory
-        return RunMarker(url: base.appendingPathComponent("Lively", isDirectory: true).appendingPathComponent("running.marker"))
+        let dir = AppSupportPaths.livelyDirectory()
+        return RunMarker(url: dir.appendingPathComponent("running.marker"))
     }
 
     /// Call once at launch. Returns true when the previous run left its marker behind.

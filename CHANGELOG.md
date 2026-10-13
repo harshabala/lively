@@ -33,6 +33,7 @@ All notable changes to Lively are documented here. The format follows [Keep a Ch
 - New suites for update checking (stubbed network), video validation with generated H.264 and Motion-JPEG clips, config persistence/migration, preferences, Reset Data, and system suspension.
 - New CI workflow runs build, tests, and packaging on every push and pull request.
 - Performance harness: `os_signpost` intervals, `scripts/perf/measure.sh`, generated fixtures. No runtime behaviour change unless `LIVELY_PERF_MODE` is set.
+- Measure isolation: `LIVELY_APPLICATION_SUPPORT` and `LIVELY_CONFIG_FILE` redirect Application Support. Setting `HOME` does not move `userDomainMask` on current macOS.
 
 ## [1.2.0] - 2026-07-14
 

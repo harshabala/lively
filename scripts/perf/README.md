@@ -30,10 +30,21 @@ scripts/perf/measure.sh paused 30
 ```
 
 Each run packages a release `.app` (skip with `LIVELY_PERF_SKIP_BUILD=1`),
-launches it with an isolated `HOME`, samples `top` and `footprint`, and writes
-`perf/results/<date>-<commit>-<mode>.json`. Playing and paused assign the 1080p30
-HEVC fixture to every visible Space via `LIVELY_PERF_*` env vars; they will
-cover the desktop until the script stops the process.
+launches the bundle executable (not via `open`) with:
+
+- `HOME` — temp dir
+- `LIVELY_APPLICATION_SUPPORT` — `$HOME/Library/Application Support`
+- `LIVELY_CONFIG_FILE` — that tree’s `Lively/config_v2.json`
+- `LIVELY_PERF_MODE` / `LIVELY_PERF_FIXTURE`
+
+`HOME` alone is not enough: `FileManager.userDomainMask` still points at
+the real user Library on current macOS. Without the `LIVELY_*` overrides
+the harness writes the live config.
+
+Samples `top`, `footprint`, and `sample(1)` (CLT). Writes
+`perf/results/<date>-<commit>-<mode>.json`. Playing and paused assign the
+1080p30 HEVC fixture to every visible Space; they cover the desktop until
+the script stops the process.
 
 ### powermetrics (sudo)
 

@@ -22,6 +22,9 @@ public final class WallpaperLibraryManager: ObservableObject {
 
         if let libraryDir {
             self.libraryDir = libraryDir
+        } else if ProcessInfo.processInfo.environment["LIVELY_APPLICATION_SUPPORT"] != nil {
+            self.libraryDir = AppSupportPaths.livelyDirectory()
+                .appendingPathComponent("Library", isDirectory: true)
         } else if let support = fileManager.urls(for: .applicationSupportDirectory, in: .userDomainMask).first {
             self.libraryDir = support.appendingPathComponent("Lively/Library", isDirectory: true)
         } else {

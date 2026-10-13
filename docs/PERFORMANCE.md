@@ -43,29 +43,46 @@ Known gap: the wallpaper video itself does not yet react to Reduce Motion
 ## P0 baseline
 
 Recorded 2026-10-13 on this machine. Host: Apple M1, macOS 27.0.1.
-Release `.app` from `./package.sh` (Command Line Tools). Isolated `HOME`.
-Popover closed (`startMinimized` default). Fixture:
-`perf/fixtures/1080p30-hevc-silent.mp4` (2 s loop). Sample window 20 s
-after a 5–8 s settle. Parent commit at measure time: `85e332a` plus this
-P0 tree.
+Release `.app` from `./package.sh` (Command Line Tools) after the
+Application Support isolation fix. Popover closed (`startMinimized`
+default). Fixture: `perf/fixtures/1080p30-hevc-silent.mp4` (2 s loop).
+Sample window 30 s after a 5–8 s settle. Git parent at measure time:
+`0b93d3b`; the packaged binary also included Application Support
+isolation (`LIVELY_APPLICATION_SUPPORT`, `LIVELY_CONFIG_FILE`, perf
+UserDefaults suite). JSON:
+`perf/results/20261013T141319Z-0b93d3b-idle.json` and the matching
+playing / paused files (gitignored).
+
+Isolation: setting `HOME` does **not** redirect
+`FileManager.SearchPathDomainMask.userDomainMask`. The harness must set
+`LIVELY_APPLICATION_SUPPORT` and `LIVELY_CONFIG_FILE`. Proof on this
+run: user `config_v2.json` checksum `2558921003 1531` was unchanged.
+
+Discard earlier tables from this day. The 20 s `85e332a` run and the
+60 s `0b93d3b` run used `HOME` only; the 60 s idle sample was actually
+playing a user wallpaper (~3% CPU, AVPlayer in `sample(1)`).
 
 `footprint` values are `phys_footprint` (mebibytes = bytes / 1024²).
 `top` %CPU is macOS one-core percent (can exceed 100% on many cores).
 
 | Metric | Idle (no wallpaper) | Playing 1080p30 HEVC | Paused | Budget |
 |---|---|---|---|---|
-| `footprint` resident | 13 MB (peak 14) | 18 MB (peak 18) | 17 MB (peak 18) | 20 / 60 / 25 MB |
-| `top` CPU % | 0.0 (all 4 samples) | 2.325 avg; last three samples 3.0, 3.1, 3.2 | 0.0 | 0.0 / 1.5 / 0.0 |
-| Threads (`top` #TH) | 3–8 | 18–19 | (see raw) | — |
+| `footprint` resident | 14 MB (peak 15) | 21 MB (peak 22) | 20 MB (peak 21) | 20 / 60 / 25 MB |
+| `top` CPU % | 0.0 (all 6 samples) | 4.783 avg; last five 5.5, 5.7, 6.1, 5.5, 5.9 | 0.133 avg; samples 0.0, 0.3, 0.0, 0.5, 0.0, 0.0 | 0.0 / 1.5 / 0.0 |
+| Threads (`top` #TH) | 9 → 3 | 25–27 | 8–10 | — |
 | Idle wake-ups / s | — | — | — | <= 1 idle |
 | Energy Impact | — | — | — | 0 / 3 / 0 |
-| Release executable | 4,364,304 bytes (4.16 MiB) | same | same | track; stretch 2 MB |
+| Release executable | 4,366,496 bytes (4.16 MiB) | same | same | track; stretch 2 MB |
 
-RAM is already inside the idle/playing/paused budgets. Playing CPU is
-**above** the 1.5% budget on this 20 s window (~3% once decode is up).
-Paused RAM stays ~4 MB above idle and still shows a CoreMedia memory pool,
-which is consistent with hypothesis B (player left resident) — P1 must
-confirm with Allocations.
+`sample(1)` on the same PIDs: idle is CFRunLoop waiting (CoreMedia
+linked, not on-CPU); playing is AVPlayer / CoreMedia decode; paused
+still has `figThreadMain` waiting on Fig semaphores.
+
+RAM is inside the idle/playing/paused budgets. Playing CPU is **above**
+the 1.5% budget once decode is up (~5.7% of one core on this 30 s
+window). Paused RAM stays ~6 MB above idle with CoreMedia threads still
+resident — a **hint** for hypothesis B, not a P1 confirmation. Paused
+CPU is not a clean 0.0 on this window.
 
 ### Not measured here (need the operator)
 

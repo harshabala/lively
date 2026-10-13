@@ -51,19 +51,18 @@ public class ConfigStore: ObservableObject {
     public init(configFileURL: URL? = nil) {
         if let provided = configFileURL {
             self.configFileURL = provided
+        } else if let envPath = ProcessInfo.processInfo.environment["LIVELY_CONFIG_FILE"],
+                  !envPath.isEmpty {
+            self.configFileURL = URL(fileURLWithPath: envPath)
         } else {
-            if let appSupport = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first {
-                let dir = appSupport.appendingPathComponent("Lively")
-                do {
-                    try FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
-                } catch {
-                    LivelyLogger.config.error("Failed to create config directory: \(error.localizedDescription)")
-                    errors.send(.directoryCreationFailed(error))
-                }
-                self.configFileURL = dir.appendingPathComponent("config_v2.json")
-            } else {
-                self.configFileURL = URL(fileURLWithPath: "/tmp/lively_config.json")
+            let dir = AppSupportPaths.livelyDirectory()
+            do {
+                try FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
+            } catch {
+                LivelyLogger.config.error("Failed to create config directory: \(error.localizedDescription)")
+                errors.send(.directoryCreationFailed(error))
             }
+            self.configFileURL = dir.appendingPathComponent("config_v2.json")
         }
         load()
     }

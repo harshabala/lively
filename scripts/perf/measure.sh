@@ -10,7 +10,9 @@
 #   LIVELY_PERF_FIXTURE        override clip for playing/paused
 #   LIVELY_PERF_HOME           isolated HOME (default a temp dir)
 #
-# Does not touch ~/Library/Application Support/Lively. Isolated HOME only.
+# Does not touch ~/Library/Application Support/Lively. HOME is not enough:
+# userDomainMask still points at the real Library. The launch also sets
+# LIVELY_APPLICATION_SUPPORT and LIVELY_CONFIG_FILE.
 #
 # powermetrics needs sudo. If sudo is not available the JSON records
 # powermetrics_error and the other samplers still run.
@@ -71,14 +73,18 @@ if [[ "$MODE" == "playing" || "$MODE" == "paused" ]]; then
 fi
 
 PERF_HOME="${LIVELY_PERF_HOME:-$(mktemp -d /tmp/lively-perf-home.XXXXXX)}"
-mkdir -p "$PERF_HOME"
+SUPPORT="${PERF_HOME}/Library/Application Support"
+mkdir -p "$SUPPORT/Lively"
 
 echo "measure: mode=$MODE duration=${DURATION}s home=$PERF_HOME"
 echo "measure: launching $BIN"
 
-# Launch the bundle executable so HOME and LIVELY_PERF_* inherit.
+# Launch the bundle executable so env vars inherit.
 # `open` goes through LaunchServices and drops those variables.
+# HOME is not enough: userDomainMask still points at the real Library.
 export HOME="$PERF_HOME"
+export LIVELY_APPLICATION_SUPPORT="$SUPPORT"
+export LIVELY_CONFIG_FILE="$SUPPORT/Lively/config_v2.json"
 export LIVELY_PERF_MODE="$MODE"
 if [[ -n "$FIXTURE" ]]; then
   export LIVELY_PERF_FIXTURE="$FIXTURE"
@@ -108,6 +114,17 @@ fi
 echo "measure: sampling top (${TOP_SAMPLES} x 5s)"
 top -l "$TOP_SAMPLES" -s 5 -pid "$PID" -stats pid,cpu,mem,rsize,threads \
   > "$RAW_DIR/top.txt" 2>/dev/null || true
+
+# sample(1) works with Command Line Tools. xctrace/Instruments need full Xcode.
+SAMPLE_SECS=10
+if [[ "$DURATION" -lt 15 ]]; then
+  SAMPLE_SECS=5
+fi
+if command -v sample >/dev/null 2>&1; then
+  echo "measure: sample ${SAMPLE_SECS}s of pid $PID"
+  sample "$PID" "$SAMPLE_SECS" 1 -mayDie -file "$RAW_DIR/sample.txt" \
+    >"$RAW_DIR/sample.err" 2>&1 || true
+fi
 
 echo "measure: footprint"
 if footprint -p "$PID" > "$RAW_DIR/footprint.txt" 2>"$RAW_DIR/footprint.err"; then
