@@ -9,7 +9,7 @@ set -euo pipefail
 
 CLT_FRAMEWORKS="/Library/Developer/CommandLineTools/Library/Developer/Frameworks"
 CLT_DEVLIB="/Library/Developer/CommandLineTools/Library/Developer/usr/lib"
-WORKSPACE_CACHE="/tmp/lively-test-cache"
+WORKSPACE_CACHE="${LIVELY_TEST_CACHE:-/tmp/lively-test-cache}"
 
 mkdir -p "$WORKSPACE_CACHE"/swiftpm "$WORKSPACE_CACHE"/swiftpm-security "$WORKSPACE_CACHE"/clang "$WORKSPACE_CACHE"/swift-build
 

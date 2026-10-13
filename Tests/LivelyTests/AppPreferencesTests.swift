@@ -122,3 +122,27 @@ struct ResetDataTests {
         #expect(manager.resolvedURL(for: manager.items[0]) != nil)
     }
 }
+
+@MainActor
+struct PreferencesSchemaTests {
+    @Test func freshAndLegacyStoresAreStampedWithCurrentVersion() {
+        let suite = "lively.tests.schema.\(UUID().uuidString)"
+        let defaults = UserDefaults(suiteName: suite)!
+        defer { defaults.removePersistentDomain(forName: suite) }
+
+        defaults.set("fps60", forKey: "prefs.frameRateCap")   // pre-versioning store
+        let prefs = AppPreferences(defaults: defaults)
+        #expect(prefs.maxResolution == .p4k)
+        #expect(defaults.integer(forKey: "prefs.schemaVersion") == AppPreferences.currentSchemaVersion)
+    }
+
+    @Test func newerSchemaVersionIsNotDowngraded() {
+        let suite = "lively.tests.schema2.\(UUID().uuidString)"
+        let defaults = UserDefaults(suiteName: suite)!
+        defer { defaults.removePersistentDomain(forName: suite) }
+
+        defaults.set(99, forKey: "prefs.schemaVersion")
+        _ = AppPreferences(defaults: defaults)
+        #expect(defaults.integer(forKey: "prefs.schemaVersion") == 99)
+    }
+}

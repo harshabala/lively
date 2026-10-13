@@ -61,6 +61,26 @@ public final class LogStore: ObservableObject {
     public var allLogsFormatted: String {
         entries.map(\.text).joined(separator: "\n")
     }
+
+    /// Set at launch from `RunMarker.begin()`.
+    public var previousRunEndedUncleanly = false
+
+    /// Support report with versions, counts and redacted logs (no file paths).
+    public func diagnosticsReport(displayCount: Int, preferences: [String: String]) -> String {
+        let info = Bundle.main.infoDictionary
+        let snapshot = DiagnosticsReport.Snapshot(
+            appVersion: info?["CFBundleShortVersionString"] as? String ?? "dev",
+            build: info?["CFBundleVersion"] as? String ?? "0",
+            osVersion: ProcessInfo.processInfo.operatingSystemVersionString,
+            displayCount: displayCount,
+            assignmentCount: nil,
+            isPaused: nil,
+            preferences: preferences,
+            previousRunEndedUncleanly: previousRunEndedUncleanly,
+            logLines: entries.map(\.text)
+        )
+        return DiagnosticsReport.render(snapshot)
+    }
 }
 
 public struct LivelyCategoryLogger: Sendable {
