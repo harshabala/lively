@@ -10,6 +10,7 @@ swift build          # build
 swift test           # run tests (full Xcode)
 ./scripts/check_hygiene.sh   # paths, secrets, duplicates, plist and script syntax
 ./package.sh         # build an ad-hoc signed Lively.app (output in $LIVELY_OUTPUT_DIR)
+scripts/perf/measure.sh idle 30   # isolated-HOME resource sample; see scripts/perf/README.md
 ```
 
 `swiftlint` (config in `.swiftlint.yml`) runs in CI; run it locally if installed.
