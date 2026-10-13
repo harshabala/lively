@@ -1,3 +1,14 @@
+# Finder/iCloud duplicate copies ("name 2.ext")
+* 2.md
+* 2.png
+
+# Generated performance fixtures and measurement output
+perf/results/
+perf/fixtures/*.mp4
+perf/fixtures/*.mov
+perf/fixtures/*.m4v
+perf/fixtures/*.hevc
+
 .DS_Store
 .claude/worktrees/
 /.build

@@ -27,17 +27,29 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
     private let runMarker = RunMarker.default
 
     func applicationDidFinishLaunching(_ notification: Notification) {
-        if runMarker.begin() {
-            LogStore.shared.previousRunEndedUncleanly = true
-            LivelyLogger.config.error("Previous run ended unexpectedly (crash, force quit or power loss)")
+        PerfSignposts.interval(PerfSignposts.launch) {
+            if runMarker.begin() {
+                LogStore.shared.previousRunEndedUncleanly = true
+                LivelyLogger.config.error("Previous run ended unexpectedly (crash, force quit or power loss)")
+            }
+            // Background-only process — no Dock icon
+            NSApp.setActivationPolicy(.accessory)
+
+            // Warm up the controller (triggers initial wallpaper load for all screens)
+            _ = wallpaperController
+
+            setupMenuBar()
+
+            let request = PerfHarness.Request.parse()
+            if request.mode != .off {
+                PerfHarness.apply(
+                    request,
+                    spaceMonitor: spaceMonitor,
+                    configStore: configStore,
+                    wallpaperController: wallpaperController
+                )
+            }
         }
-        // Background-only process — no Dock icon
-        NSApp.setActivationPolicy(.accessory)
-
-        // Warm up the controller (triggers initial wallpaper load for all screens)
-        _ = wallpaperController
-
-        setupMenuBar()
     }
 
     func applicationWillTerminate(_ notification: Notification) {
@@ -84,7 +96,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
         // Apply saved appearance (Light / Dark / System) before first paint.
         AppPreferences.applyAppAppearance(AppPreferences.shared.appearance)
 
-        if AppPreferences.shared.checkForUpdates {
+        let perfMode = PerfHarness.Request.parse().mode
+        if AppPreferences.shared.checkForUpdates && perfMode == .off {
             Task { await UpdateChecker.shared.checkIfEnabled() }
         }
     }
