@@ -159,9 +159,9 @@ Exit: playing CPU and Energy Impact meet budget on the 1080p30 fixture; the 4K60
 - If a hypothesis in section 1 is disproved by profiling, say so in `docs/perf-findings.md` and skip the item.
 - Stop and ask the owner before: changing minimum macOS version, removing a user-facing setting, or any rewrite of a module larger than ~300 lines.
 
-## 5. Expected payoff (ranked, to be confirmed by P1)
-1. P4 transcode to native-size 30 fps HEVC plus audio strip: largest CPU, GPU and Energy gain while playing.
-2. P3 cold pause and lazy popover: largest RAM gain while idle or paused.
-3. P2 removal of the 20 s timer and other wake-ups: removes the constant idle drain.
-4. P4 shared player across displays and seamless loop: removes loop spikes and halves multi-display decode.
-5. P6 build flags: smaller binary and faster launch, modest runtime effect.
+## 5. Expected payoff (ranked by P1 — see `docs/perf-findings.md`)
+1. P4 / H disable audio tracks when muted: muted AAC fixture was 13.7% CPU / 47 MB vs 4.4% / 21 MB silent.
+2. P4 / J cap or transcode to 1080p30 (not 5K-native): 4K60 was ~8.6% CPU and 466 MB IOSurface virtual.
+3. P3 / B cold pause: paused keeps CoreMedia threads and ~82 MB IOSurface virtual.
+4. P2 / A, E, F wake-ups: 20 s timer confirmed; idle `top` already 0.0%; energy needs sudo.
+5. P3 / C lazy popover, then P4 G/K, then P5/P6.

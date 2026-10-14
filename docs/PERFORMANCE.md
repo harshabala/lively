@@ -81,8 +81,25 @@ still has `figThreadMain` waiting on Fig semaphores.
 RAM is inside the idle/playing/paused budgets. Playing CPU is **above**
 the 1.5% budget once decode is up (~5.7% of one core on this 30 s
 window). Paused RAM stays ~6 MB above idle with CoreMedia threads still
-resident — a **hint** for hypothesis B, not a P1 confirmation. Paused
-CPU is not a clean 0.0 on this window.
+resident — P1 confirmed this as hypothesis B.
+
+## P1 fixture comparison (2026-10-14)
+
+Same host and isolated harness as P0. `sample` / `heap` / `vmmap` added.
+Popover closed. One 5K built-in display. JSON prefix `20261014T05`.
+
+| Run | CPU avg (steady) | `footprint` | vs 1080p30 HEVC silent |
+|---|---|---|---|
+| Idle 45 s | 0.0 | 15 MB | — |
+| 1080p30 HEVC silent | 4.367 (5.1–5.6) | 21 MB | baseline |
+| 1080p30 HEVC audio, muted | 13.7 (14.8–17.7) | 47 MB | +9.3% CPU, +26 MB |
+| 4K60 HEVC silent | 7.033 (7.8–8.9) | 26 MB | +2.7% CPU, +5 MB |
+| 1080p30 H.264 silent | 4.217 (4.7–5.5) | 21 MB | ~same as HEVC |
+| Paused 1080p30 HEVC | 0.017 | 19 MB | +4 MB vs idle |
+
+1080p30 HEVC silent already misses the 1.5% playing budget (~5.2% of one
+core in AVFoundation). A muted audio track triples that. Ranking and
+A–N verdicts: `docs/perf-findings.md`.
 
 ### Not measured here (need the operator)
 
