@@ -1,7 +1,6 @@
 import AppKit
 import AVFoundation
 import Combine
-import IOKit.ps
 
 // MARK: - WallpaperSession
 
@@ -603,7 +602,9 @@ public final class WallpaperController: ObservableObject {
     
     private var appearanceObserver: AnyCancellable?
     private var thermalStateObserver: AnyCancellable?
-    private var powerSourceTimer: Timer?
+    /// Test hook: remains nil — power source is observed, not polled.
+    var repeatingPowerSourceTimer: Timer?
+    private var stopPowerSourceMonitor: PowerSourceMonitor.Stop?
     private var systemSuspension = SystemSuspension()
 
     // MARK: - Init
@@ -651,8 +652,8 @@ public final class WallpaperController: ObservableObject {
         appearanceObserver = nil
         thermalStateObserver?.cancel()
         thermalStateObserver = nil
-        powerSourceTimer?.invalidate()
-        powerSourceTimer = nil
+        stopPowerSourceMonitor?()
+        stopPowerSourceMonitor = nil
         cancellables.removeAll()
     }
 
@@ -725,21 +726,11 @@ public final class WallpaperController: ObservableObject {
     }
 
     private func setupBatteryMonitor() {
-        // IOKit has no simple Combine publisher; 20s is enough for battery pause.
-        powerSourceTimer = Timer.scheduledTimer(withTimeInterval: 20, repeats: true) { [weak self] _ in
+        stopPowerSourceMonitor = PowerSourceMonitor.start { [weak self] in
             Task { @MainActor [weak self] in
                 self?.refreshBatteryState()
             }
         }
-        // Let the OS coalesce wake-ups; exact timing doesn't matter here.
-        powerSourceTimer?.tolerance = 5
-        // Also refresh when Low Power Mode changes (related power policy signal).
-        NotificationCenter.default.publisher(for: Notification.Name("NSProcessInfoPowerStateDidChange"))
-            .receive(on: DispatchQueue.main)
-            .sink { [weak self] (_: Notification) in
-                self?.refreshBatteryState()
-            }
-            .store(in: &cancellables)
     }
 
     private func refreshBatteryState() {
@@ -991,53 +982,5 @@ public final class WallpaperController: ObservableObject {
                 }
             )
         }
-    }
-}
-
-// MARK: - Power Source
-
-enum PowerSourceMonitor {
-    struct Snapshot {
-        var isOnBattery: Bool
-        /// 0–100 when known.
-        var levelPercent: Double?
-    }
-
-    static func snapshot() -> Snapshot {
-        guard
-            let blob = IOPSCopyPowerSourcesInfo()?.takeRetainedValue(),
-            let list = IOPSCopyPowerSourcesList(blob)?.takeRetainedValue() as? [CFTypeRef]
-        else {
-            return Snapshot(
-                isOnBattery: ProcessInfo.processInfo.isLowPowerModeEnabled,
-                levelPercent: nil
-            )
-        }
-
-        var onBattery = false
-        var level: Double?
-
-        for source in list {
-            guard
-                let desc = IOPSGetPowerSourceDescription(blob, source)?.takeUnretainedValue() as? [String: Any]
-            else { continue }
-
-            if let state = desc[kIOPSPowerSourceStateKey] as? String,
-               state == kIOPSBatteryPowerValue {
-                onBattery = true
-            }
-            // Current capacity is typically 0–100 for internal batteries.
-            if let capacity = desc[kIOPSCurrentCapacityKey] as? Int {
-                level = Double(capacity)
-            } else if let capacity = desc[kIOPSCurrentCapacityKey] as? Double {
-                level = capacity
-            }
-        }
-
-        if !onBattery && list.isEmpty {
-            onBattery = ProcessInfo.processInfo.isLowPowerModeEnabled
-        }
-
-        return Snapshot(isOnBattery: onBattery, levelPercent: level)
     }
 }
