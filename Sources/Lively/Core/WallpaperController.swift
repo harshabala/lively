@@ -16,6 +16,7 @@ private final class WallpaperSession {
     let window: WallpaperWindow
     private let contentView: NSView
     private let playerLayer: AVPlayerLayer
+    private let posterLayer = CALayer()
     private var player: AVPlayer?
     private var itemObservers: [NSObjectProtocol] = []
     private var statusObservation: AnyCancellable?
@@ -28,6 +29,9 @@ private final class WallpaperSession {
     private var wantsPlayback = false
     private var isOccluded = false
     private var coldPauseTask: Task<Void, Never>?
+    /// True from the first `beginColdPause` until resume/hide; blocks grace reset.
+    private var coldPauseStarted = false
+    private var posterImage: CGImage?
     private var readyForDisplayObservation: AnyCancellable?
 
     init(screen: NSScreen) {
@@ -44,6 +48,12 @@ private final class WallpaperSession {
         playerLayer.frame = contentView.bounds
         playerLayer.autoresizingMask = [.layerWidthSizable, .layerHeightSizable]
         contentView.layer!.addSublayer(playerLayer)
+        posterLayer.frame = contentView.bounds
+        posterLayer.autoresizingMask = [.layerWidthSizable, .layerHeightSizable]
+        posterLayer.contentsGravity = .resizeAspectFill
+        posterLayer.isHidden = true
+        contentView.layer!.addSublayer(posterLayer)
+        contentView.layer!.contentsGravity = .resizeAspectFill
         
         window.contentView = contentView
 
@@ -65,10 +75,14 @@ private final class WallpaperSession {
         }
         contentView.frame = localFrame
         playerLayer.frame = localFrame
+        posterLayer.frame = localFrame
         
         // Apply display settings
         let gravity: AVLayerVideoGravity = wallpaper.videoGravity == .fit ? .resizeAspect : .resizeAspectFill
         playerLayer.videoGravity = gravity
+        let contentsGravity = Self.contentsGravity(for: gravity)
+        contentView.layer?.contentsGravity = contentsGravity
+        posterLayer.contentsGravity = contentsGravity
         
         if url == currentURL, player != nil {
             player?.isMuted = wallpaper.isMuted
@@ -166,17 +180,20 @@ private final class WallpaperSession {
         // Connect player to layer; playback starts when the item is ready.
         playerLayer.player = newPlayer
         self.player = newPlayer
+        // Attaching a player can wipe AVPlayerLayer.contents; restore the still.
+        reapplyPosterIfNeeded()
         updatePlaybackRate()
     }
 
     private func handleFailure(_ error: Error, onError: @escaping @Sendable (Error) -> Void) {
         guard let url = currentURL else { return }
         cancelColdPauseTask()
+        coldPauseStarted = false
         LivelyLogger.wallpaper.error("Playback failed for \(url.lastPathComponent): \(error.localizedDescription)")
         failedURL = url
         currentURL = nil
         tearDownPlayer()
-        playerLayer.contents = nil
+        clearPoster()
         window.orderOut(nil)
         onError(error)
     }
@@ -221,10 +238,11 @@ private final class WallpaperSession {
     /// Hides the window and stops playback.
     func hide() {
         cancelColdPauseTask()
+        coldPauseStarted = false
         wantsPlayback = false
         currentURL = nil
         tearDownPlayer()
-        playerLayer.contents = nil
+        clearPoster()
         window.orderOut(nil)
     }
 
@@ -255,9 +273,13 @@ private final class WallpaperSession {
     /// once a poster frame is on the layer. Never orders the window out.
     func beginColdPause(trigger: ColdPauseTrigger) {
         pause()
-        guard player != nil else { return }
+        guard ColdPausePolicy.shouldScheduleTearDown(
+            alreadyScheduled: coldPauseStarted,
+            playerExists: player != nil
+        ) else { return }
+        guard let pausedPlayer = player else { return }
 
-        cancelColdPauseTask()
+        coldPauseStarted = true
         let grace = ColdPausePolicy.grace(for: trigger)
         coldPauseTask = Task { @MainActor [weak self] in
             if !ColdPausePolicy.shouldTearDown(elapsed: .zero, grace: grace) {
@@ -268,12 +290,13 @@ private final class WallpaperSession {
                 }
             }
             guard !Task.isCancelled else { return }
-            await self?.enterColdPauseIfPosterCaptured()
+            await self?.enterColdPauseIfPosterCaptured(pausedPlayer: pausedPlayer)
         }
     }
 
     func cancelColdPauseAndResume() {
         cancelColdPauseTask()
+        coldPauseStarted = false
         resume()
     }
 
@@ -301,18 +324,24 @@ private final class WallpaperSession {
         coldPauseTask = nil
     }
 
-    private func enterColdPauseIfPosterCaptured() async {
-        guard player != nil else { return }
-        guard let image = await capturePosterImage() else {
+    private func enterColdPauseIfPosterCaptured(pausedPlayer: AVPlayer) async {
+        let image = await capturePosterImage(from: pausedPlayer)
+        guard ColdPausePolicy.shouldCommitTearDown(
+            isCancelled: Task.isCancelled,
+            wantsPlayback: wantsPlayback,
+            isSamePlayer: player === pausedPlayer
+        ) else { return }
+        guard let image else {
             LivelyLogger.wallpaper.error("Cold pause poster capture failed; keeping paused player")
             return
         }
-        playerLayer.contents = image
+        applyPoster(image)
         tearDownPlayer()
+        reapplyPosterIfNeeded()
     }
 
-    private func capturePosterImage() async -> CGImage? {
-        guard let player, let item = player.currentItem else { return nil }
+    private func capturePosterImage(from player: AVPlayer) async -> CGImage? {
+        guard let item = player.currentItem else { return nil }
         let time = player.currentTime()
         let scale = window.backingScaleFactor
         let bounds = playerLayer.bounds
@@ -326,13 +355,52 @@ private final class WallpaperSession {
         }
     }
 
+    private static func contentsGravity(for videoGravity: AVLayerVideoGravity) -> CALayerContentsGravity {
+        switch videoGravity {
+        case .resizeAspect: return .resizeAspect
+        case .resize: return .resize
+        default: return .resizeAspectFill
+        }
+    }
+
+    /// Still lives on `contentView.layer` and a sibling above `AVPlayerLayer`
+    /// so tearing down / attaching a player cannot blank the window.
+    /// `playerLayer.contents` is re-applied after those mutations as well.
+    private func applyPoster(_ image: CGImage) {
+        posterImage = image
+        let gravity = Self.contentsGravity(for: playerLayer.videoGravity)
+        contentView.layer?.contents = image
+        contentView.layer?.contentsGravity = gravity
+        posterLayer.contents = image
+        posterLayer.contentsGravity = gravity
+        posterLayer.isHidden = false
+        playerLayer.contents = image
+        playerLayer.isOpaque = false
+        playerLayer.backgroundColor = CGColor.clear
+    }
+
+    private func reapplyPosterIfNeeded() {
+        guard let posterImage else { return }
+        applyPoster(posterImage)
+    }
+
+    private func clearPoster() {
+        posterImage = nil
+        contentView.layer?.contents = nil
+        posterLayer.contents = nil
+        posterLayer.isHidden = true
+        playerLayer.contents = nil
+        playerLayer.backgroundColor = nil
+        playerLayer.isOpaque = true
+    }
+
     /// Keep the poster until `isReady && isReadyForDisplay`. Called at
     /// `isReady`; if `isReadyForDisplay` is not yet true, wait for the first
     /// frame then clear so the video layer takes over.
     private func clearPosterWhenVideoCanDisplay() {
-        guard isReady, playerLayer.contents != nil else { return }
+        guard isReady, posterImage != nil else { return }
         if playerLayer.isReadyForDisplay {
-            playerLayer.contents = nil
+            clearPoster()
             readyForDisplayObservation?.cancel()
             readyForDisplayObservation = nil
             return
@@ -342,7 +410,7 @@ private final class WallpaperSession {
             .receive(on: DispatchQueue.main)
             .sink { [weak self] ready in
                 guard let self, self.isReady, ready else { return }
-                self.playerLayer.contents = nil
+                self.clearPoster()
                 self.readyForDisplayObservation?.cancel()
                 self.readyForDisplayObservation = nil
             }
@@ -362,6 +430,8 @@ private final class WallpaperSession {
         player?.replaceCurrentItem(with: nil)
         playerLayer.player = nil
         player = nil
+        // `player = nil` can wipe AVPlayerLayer.contents; restore the still.
+        reapplyPosterIfNeeded()
     }
 }
 
