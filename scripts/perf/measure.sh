@@ -119,6 +119,9 @@ top -l "$TOP_SAMPLES" -s 5 -pid "$PID" -stats pid,cpu,mem,rsize,threads \
 SAMPLE_SECS=10
 if [[ "$DURATION" -lt 15 ]]; then
   SAMPLE_SECS=5
+elif [[ "$DURATION" -ge 40 ]]; then
+  # Long enough to catch the 20 s battery Timer (hypothesis A).
+  SAMPLE_SECS=25
 fi
 if command -v sample >/dev/null 2>&1; then
   echo "measure: sample ${SAMPLE_SECS}s of pid $PID"
@@ -131,6 +134,19 @@ if footprint -p "$PID" > "$RAW_DIR/footprint.txt" 2>"$RAW_DIR/footprint.err"; th
   :
 else
   echo "measure: footprint failed (see $RAW_DIR/footprint.err)"
+fi
+
+if command -v heap >/dev/null 2>&1; then
+  echo "measure: heap (top by size)"
+  heap -sH "$PID" 2>"$RAW_DIR/heap.err" | python3 -c '
+import sys
+lines = sys.stdin.readlines()
+sys.stdout.writelines(lines[:120])
+' > "$RAW_DIR/heap-top.txt" || true
+fi
+if command -v vmmap >/dev/null 2>&1; then
+  echo "measure: vmmap --summary"
+  vmmap --summary "$PID" > "$RAW_DIR/vmmap-summary.txt" 2>"$RAW_DIR/vmmap.err" || true
 fi
 
 POWERMETRICS_ERROR=""
@@ -159,6 +175,7 @@ MEASURE_STAMP="$STAMP" MEASURE_COMMIT="$COMMIT" MEASURE_MODE="$MODE" \
 MEASURE_DURATION="$DURATION" MEASURE_PID="$PID" MEASURE_CHIP="$CHIP" \
 MEASURE_OS="$OS_VER" MEASURE_BIN="$BINARY_BYTES" \
 MEASURE_POWER_ERR="$POWERMETRICS_ERROR" MEASURE_RAW="$RAW_DIR" MEASURE_JSON="$JSON" \
+MEASURE_FIXTURE="${FIXTURE:-}" \
 python3 <<'PY'
 import json, os, re
 from pathlib import Path
@@ -216,6 +233,7 @@ payload = {
     "energy_impact": None,
     "idle_wakeups_per_s": None,
     "raw_dir": str(raw_dir),
+    "fixture": os.environ.get("MEASURE_FIXTURE") or None,
     "notes": [
         "Energy Impact is Activity Monitor / Instruments Energy Log; not sampled here.",
         "Idle wake-ups need powermetrics or Activity Monitor.",

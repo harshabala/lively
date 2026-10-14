@@ -41,10 +41,12 @@ launches the bundle executable (not via `open`) with:
 the real user Library on current macOS. Without the `LIVELY_*` overrides
 the harness writes the live config.
 
-Samples `top`, `footprint`, and `sample(1)` (CLT). Writes
-`perf/results/<date>-<commit>-<mode>.json`. Playing and paused assign the
-1080p30 HEVC fixture to every visible Space; they cover the desktop until
-the script stops the process.
+Samples `top`, `footprint`, `sample(1)`, `heap -sH` (first 120 lines), and
+`vmmap --summary` (CLT). Writes `perf/results/<date>-<commit>-<mode>.json`.
+Playing and paused assign the 1080p30 HEVC fixture to every visible Space
+unless `LIVELY_PERF_FIXTURE` is set; they cover the desktop until the
+script stops the process. Duration ≥ 40 s uses a 25 s `sample` so the
+20 s battery timer can show up.
 
 ### powermetrics (sudo)
 

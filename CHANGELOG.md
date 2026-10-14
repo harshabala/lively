@@ -34,6 +34,7 @@ All notable changes to Lively are documented here. The format follows [Keep a Ch
 - New CI workflow runs build, tests, and packaging on every push and pull request.
 - Performance harness: `os_signpost` intervals, `scripts/perf/measure.sh`, generated fixtures. No runtime behaviour change unless `LIVELY_PERF_MODE` is set.
 - Measure isolation: `LIVELY_APPLICATION_SUPPORT` and `LIVELY_CONFIG_FILE` redirect Application Support. Setting `HOME` does not move `userDomainMask` on current macOS.
+- `scripts/perf/measure.sh` also records `heap` (top by size) and `vmmap --summary`.
 
 ## [1.2.0] - 2026-07-14
 
