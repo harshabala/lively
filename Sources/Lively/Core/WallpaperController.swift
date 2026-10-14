@@ -27,6 +27,8 @@ private final class WallpaperSession {
     private var isReady = false
     private var wantsPlayback = false
     private var isOccluded = false
+    private var coldPauseTask: Task<Void, Never>?
+    private var readyForDisplayObservation: AnyCancellable?
 
     init(screen: NSScreen) {
         window = WallpaperWindow(screen: screen)
@@ -68,7 +70,7 @@ private final class WallpaperSession {
         let gravity: AVLayerVideoGravity = wallpaper.videoGravity == .fit ? .resizeAspect : .resizeAspectFill
         playerLayer.videoGravity = gravity
         
-        if url == currentURL {
+        if url == currentURL, player != nil {
             player?.isMuted = wallpaper.isMuted
             player?.volume = wallpaper.volume
             if let item = player?.currentItem {
@@ -76,6 +78,7 @@ private final class WallpaperSession {
             }
             if isReady { window.show() }
             updatePlaybackRate()
+            clearPosterWhenVideoCanDisplay()
             return
         }
 
@@ -152,6 +155,7 @@ private final class WallpaperSession {
                     // bad file never covers the desktop with a black window.
                     if self.wantsPlayback { self.window.show() }
                     self.updatePlaybackRate()
+                    self.clearPosterWhenVideoCanDisplay()
                 case .failed:
                     self.handleFailure(item?.error ?? CocoaError(.fileReadCorruptFile), onError: onError)
                 default:
@@ -167,10 +171,12 @@ private final class WallpaperSession {
 
     private func handleFailure(_ error: Error, onError: @escaping @Sendable (Error) -> Void) {
         guard let url = currentURL else { return }
+        cancelColdPauseTask()
         LivelyLogger.wallpaper.error("Playback failed for \(url.lastPathComponent): \(error.localizedDescription)")
         failedURL = url
         currentURL = nil
         tearDownPlayer()
+        playerLayer.contents = nil
         window.orderOut(nil)
         onError(error)
     }
@@ -214,9 +220,11 @@ private final class WallpaperSession {
 
     /// Hides the window and stops playback.
     func hide() {
+        cancelColdPauseTask()
         wantsPlayback = false
         currentURL = nil
         tearDownPlayer()
+        playerLayer.contents = nil
         window.orderOut(nil)
     }
 
@@ -239,7 +247,34 @@ private final class WallpaperSession {
         PerfSignposts.interval(PerfSignposts.resume) {
             wantsPlayback = true
             updatePlaybackRate()
+            clearPosterWhenVideoCanDisplay()
         }
+    }
+
+    /// Pause immediately, then tear the player down after the policy grace
+    /// once a poster frame is on the layer. Never orders the window out.
+    func beginColdPause(trigger: ColdPauseTrigger) {
+        pause()
+        guard player != nil else { return }
+
+        cancelColdPauseTask()
+        let grace = ColdPausePolicy.grace(for: trigger)
+        coldPauseTask = Task { @MainActor [weak self] in
+            if !ColdPausePolicy.shouldTearDown(elapsed: .zero, grace: grace) {
+                do {
+                    try await Task.sleep(for: grace)
+                } catch {
+                    return
+                }
+            }
+            guard !Task.isCancelled else { return }
+            await self?.enterColdPauseIfPosterCaptured()
+        }
+    }
+
+    func cancelColdPauseAndResume() {
+        cancelColdPauseTask()
+        resume()
     }
 
     private func occlusionDidChange() {
@@ -260,6 +295,58 @@ private final class WallpaperSession {
             player.pause()
         }
     }
+
+    private func cancelColdPauseTask() {
+        coldPauseTask?.cancel()
+        coldPauseTask = nil
+    }
+
+    private func enterColdPauseIfPosterCaptured() async {
+        guard player != nil else { return }
+        guard let image = await capturePosterImage() else {
+            LivelyLogger.wallpaper.error("Cold pause poster capture failed; keeping paused player")
+            return
+        }
+        playerLayer.contents = image
+        tearDownPlayer()
+    }
+
+    private func capturePosterImage() async -> CGImage? {
+        guard let player, let item = player.currentItem else { return nil }
+        let time = player.currentTime()
+        let scale = window.backingScaleFactor
+        let bounds = playerLayer.bounds
+        let generator = AVAssetImageGenerator(asset: item.asset)
+        generator.appliesPreferredTrackTransform = true
+        generator.maximumSize = CGSize(width: bounds.width * scale, height: bounds.height * scale)
+        do {
+            return try await generator.image(at: time).image
+        } catch {
+            return nil
+        }
+    }
+
+    /// Keep the poster until `isReady && isReadyForDisplay`. Called at
+    /// `isReady`; if `isReadyForDisplay` is not yet true, wait for the first
+    /// frame then clear so the video layer takes over.
+    private func clearPosterWhenVideoCanDisplay() {
+        guard isReady, playerLayer.contents != nil else { return }
+        if playerLayer.isReadyForDisplay {
+            playerLayer.contents = nil
+            readyForDisplayObservation?.cancel()
+            readyForDisplayObservation = nil
+            return
+        }
+        guard readyForDisplayObservation == nil else { return }
+        readyForDisplayObservation = playerLayer.publisher(for: \.isReadyForDisplay)
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] ready in
+                guard let self, self.isReady, ready else { return }
+                self.playerLayer.contents = nil
+                self.readyForDisplayObservation?.cancel()
+                self.readyForDisplayObservation = nil
+            }
+    }
     
     private func tearDownPlayer() {
         for observer in itemObservers {
@@ -268,6 +355,8 @@ private final class WallpaperSession {
         itemObservers.removeAll()
         statusObservation?.cancel()
         statusObservation = nil
+        readyForDisplayObservation?.cancel()
+        readyForDisplayObservation = nil
         isReady = false
         player?.pause()
         player?.replaceCurrentItem(with: nil)
@@ -506,10 +595,22 @@ public final class WallpaperController: ObservableObject {
         isPaused || isThrottled || isBatteryPaused || isSystemSuspended
     }
 
+    private var coldPauseTrigger: ColdPauseTrigger {
+        if isBatteryPaused || isThrottled {
+            return .batteryOrThermal
+        }
+        if isSystemSuspended {
+            return .lockSleepOrSaver
+        }
+        return .userPause
+    }
+
     private func applyPlaybackState() {
         if shouldHaltPlayback {
-            sessionManager.allSessions.values.forEach { $0.pause() }
+            let trigger = coldPauseTrigger
+            sessionManager.allSessions.values.forEach { $0.beginColdPause(trigger: trigger) }
         } else {
+            sessionManager.allSessions.values.forEach { $0.cancelColdPauseAndResume() }
             // Re-sync rather than just resuming, so any config or space changes
             // that arrived while paused are picked up immediately.
             PerfSignposts.interval(PerfSignposts.resume) {

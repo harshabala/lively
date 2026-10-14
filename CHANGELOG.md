@@ -29,6 +29,7 @@ All notable changes to Lively are documented here. The format follows [Keep a Ch
 - Wallpapers stop decoding while displays or the Mac sleep, the screen is locked, the screen saver runs, another user is active, or the wallpaper is fully covered, and resume automatically.
 - Muted wallpapers disable audio tracks so AudioToolbox does not keep decoding a silent AAC stream.
 - Match Source decode is capped at 1080p (1920×1080). Explicit 4K still decodes at 3840×2160.
+- Paused wallpapers tear down the player after a 10 s grace (immediately on battery or thermal pressure) and keep a still poster on screen until the next decoded frame.
 
 ### Tests / CI
 
