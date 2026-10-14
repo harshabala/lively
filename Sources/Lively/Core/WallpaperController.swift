@@ -192,12 +192,8 @@ private final class WallpaperSession {
         if !prefs.hardwareDecoding {
             player.currentItem?.preferredMaximumResolution = CGSize(width: 1920, height: 1080)
         } else {
-            let maxH = prefs.maxResolution.preferredMaxHeight
-            if maxH > 0 {
-                player.currentItem?.preferredMaximumResolution = CGSize(width: maxH * 16 / 9, height: maxH)
-            } else {
-                player.currentItem?.preferredMaximumResolution = .zero
-            }
+            player.currentItem?.preferredMaximumResolution =
+                VideoDecodeBudget.preferredMaximumResolution(maxResolution: prefs.maxResolution)
         }
     }
 
