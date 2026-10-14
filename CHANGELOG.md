@@ -27,6 +27,7 @@ All notable changes to Lively are documented here. The format follows [Keep a Ch
 ### Changed
 
 - Wallpapers stop decoding while displays or the Mac sleep, the screen is locked, the screen saver runs, another user is active, or the wallpaper is fully covered, and resume automatically.
+- Muted wallpapers disable audio tracks so AudioToolbox does not keep decoding a silent AAC stream.
 
 ### Tests / CI
 

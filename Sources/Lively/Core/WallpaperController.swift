@@ -71,6 +71,9 @@ private final class WallpaperSession {
         if url == currentURL {
             player?.isMuted = wallpaper.isMuted
             player?.volume = wallpaper.volume
+            if let item = player?.currentItem {
+                applyAudioTrackPolicy(to: item, muted: wallpaper.isMuted)
+            }
             if isReady { window.show() }
             updatePlaybackRate()
             return
@@ -137,11 +140,14 @@ private final class WallpaperSession {
         // the closure executes on the main thread and avoids @MainActor isolation crashes.
         statusObservation = item.publisher(for: \.status)
             .receive(on: DispatchQueue.main)
-            .sink { [weak self, weak item] status in
+            .sink { [weak self, weak item, muted] status in
                 guard let self else { return }
                 switch status {
                 case .readyToPlay:
                     self.isReady = true
+                    if let item {
+                        self.applyAudioTrackPolicy(to: item, muted: muted)
+                    }
                     // Only reveal the window once there is a frame to show, so a
                     // bad file never covers the desktop with a black window.
                     if self.wantsPlayback { self.window.show() }
@@ -167,6 +173,16 @@ private final class WallpaperSession {
         tearDownPlayer()
         window.orderOut(nil)
         onError(error)
+    }
+
+    /// `AVPlayerItem.tracks` is empty until `.readyToPlay`.
+    private func applyAudioTrackPolicy(to item: AVPlayerItem, muted: Bool) {
+        for track in item.tracks {
+            track.isEnabled = AudioTrackPolicy.isEnabled(
+                isAudioMedia: track.assetTrack?.mediaType == .audio,
+                muted: muted
+            )
+        }
     }
 
     private func applyPreferences(to player: AVPlayer, prefs: AppPreferences) {
