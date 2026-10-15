@@ -598,6 +598,7 @@ public final class WallpaperController: ObservableObject {
     private let preferences: AppPreferences
     private let bookmarkManager: BookmarkManager
     private let sessionManager: WallpaperSessionManager
+    private var previousConfigs: [String: SpaceConfig] = [:]
     private var cancellables = Set<AnyCancellable>()
     
     private var appearanceObserver: AnyCancellable?
@@ -919,22 +920,50 @@ public final class WallpaperController: ObservableObject {
         // NOTE: never prune configs here. `screenSpaces` only describes the
         // *currently visible* Space on each *currently connected* display, so
         // assignments for other Spaces and unplugged monitors must survive.
+        spaceMonitor.hasAssignedWallpaper = { [weak self] in
+            !(self?.configStore.configs.isEmpty ?? true)
+        }
+
         spaceMonitor.$screenSpaces
             .sink { [weak self] spaces in
                 self?.synchronize(to: spaces)
             }
             .store(in: &cancellables)
 
+        previousConfigs = configStore.configs
         configStore.$configs
-            .sink { [weak self] _ in
+            .sink { [weak self] newConfigs in
                 Task { @MainActor [weak self] in
-                    // An edited assignment (e.g. re-choosing the same file
-                    // after fixing it) deserves a fresh attempt.
-                    self?.sessionManager.retryFailedPlayback()
-                    self?.spaceMonitor.refresh()
+                    self?.handleConfigsChanged(newConfigs)
                 }
             }
             .store(in: &cancellables)
+    }
+
+    private func handleConfigsChanged(_ newConfigs: [String: SpaceConfig]) {
+        let previous = previousConfigs
+        previousConfigs = newConfigs
+
+        let currentSpaceKeys = Set(spaceMonitor.screenSpaces.map(\.spaceKey))
+        let keysChanged = ConfigChangeDiff.currentSpaceKeysChanged(
+            from: Set(previous.keys),
+            to: Set(newConfigs.keys),
+            currentSpaceKeys: currentSpaceKeys
+        )
+        let currentAssignmentChanged = currentSpaceKeys.contains { key in
+            previous[key]?.dynamicWallpaper != newConfigs[key]?.dynamicWallpaper
+                || previous[key]?.addedAt != newConfigs[key]?.addedAt
+        }
+
+        // Inactive-Space edits must not rebuild ScreenSpace snapshots.
+        if keysChanged {
+            sessionManager.retryFailedPlayback()
+            spaceMonitor.refresh()
+        } else if currentAssignmentChanged {
+            // Same visible key, new video (or re-chosen file): apply without
+            // re-querying desktopImageURL.
+            retryFailedPlayback()
+        }
     }
     
     private func setupAppearanceObserver() {

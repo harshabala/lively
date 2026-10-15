@@ -31,6 +31,7 @@ All notable changes to Lively are documented here. The format follows [Keep a Ch
 - Match Source decode is capped at 1080p (1920×1080). Explicit 4K still decodes at 3840×2160.
 - Paused wallpapers tear down the player after a 10 s grace (immediately on battery or thermal pressure) and keep a still poster on screen until the next decoded frame.
 - Battery pause follows power-source and Low Power Mode notifications instead of polling every 20 seconds.
+- Config edits for Spaces that are not currently visible no longer refresh Space snapshots. Space switches skip the wallpaper-URL poll when nothing is assigned.
 
 ### Tests / CI
 

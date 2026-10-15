@@ -37,6 +37,10 @@ public class SpaceMonitor: ObservableObject {
     @Published public private(set) var screenSpaces: [ScreenSpace] = []
     @Published public private(set) var isRefreshing = false
 
+    /// When false, Space switches skip the 10×50 ms desktop-image poll.
+    /// Default `{ true }` keeps the poll unless the controller assigns otherwise.
+    public var hasAssignedWallpaper: () -> Bool = { true }
+
     private var cancellables = Set<AnyCancellable>()
     private var spaceChangeTask: Task<Void, Never>?
 
@@ -76,6 +80,10 @@ public class SpaceMonitor: ObservableObject {
 
     private func handleSpaceChange() {
         spaceChangeTask?.cancel()
+        guard hasAssignedWallpaper() else {
+            refresh()
+            return
+        }
         let previousURLs = Dictionary(
             uniqueKeysWithValues: screenSpaces.map { ($0.id, $0.desktopImageURL) }
         )
