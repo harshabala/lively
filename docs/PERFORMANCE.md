@@ -101,6 +101,59 @@ Popover closed. One 5K built-in display. JSON prefix `20261014T05`.
 core in AVFoundation). A muted audio track triples that. Ranking and
 A–N verdicts: `docs/perf-findings.md`.
 
+## Open items P2–P4 (2026-10-15)
+
+Same host and isolated harness as P1. Git `42df2f9` (`perf/open-items`
+after H / J / B / A / E / F). Release `.app` from `./package.sh` (CLT).
+Popover closed. One 5K built-in display. Sample window 30 s after a 5–8 s
+settle. User `config_v2.json` checksum `2558921003 1531` before and after
+(unchanged). `sudo -n` still unavailable; `xctrace` still needs full
+Xcode (`xcode-select -p` is Command Line Tools). Idle wake-ups and Energy
+Impact stay `—`.
+
+JSON (gitignored):
+
+- idle: `perf/results/20261015T042057Z-42df2f9-idle.json`
+- playing silent: `perf/results/20261015T042152Z-42df2f9-playing.json`
+- paused: `perf/results/20261015T042238Z-42df2f9-paused.json`
+- playing muted-audio: `perf/results/20261015T042328Z-42df2f9-playing.json`
+  (fixture `1080p30-hevc-audio.mp4`)
+
+BEFORE copies the P1 rows that this after-set repeats. P1 idle was 45 s;
+this after set is 30 s. The P1 table above is not replaced.
+
+### BEFORE (P1, 2026-10-14)
+
+| Run | CPU avg (steady) | `footprint` |
+|---|---|---|
+| Idle 45 s | 0.0 | 15 MB |
+| 1080p30 HEVC silent | 4.367 (5.1–5.6) | 21 MB |
+| 1080p30 HEVC audio, muted | 13.7 (14.8–17.7) | 47 MB |
+| Paused 1080p30 HEVC | 0.017 | 19 MB |
+
+### AFTER (`42df2f9`, 2026-10-15)
+
+`top` %CPU is the JSON `cpu_pct_avg` (all 6 samples). The range is the
+last five samples after the first 0.0 settle row. `footprint` is
+`phys_footprint` (mebibytes).
+
+| Run | CPU avg (steady) | `footprint` | vs P1 |
+|---|---|---|---|
+| Idle 30 s | 0.0 (all 6 samples) | 14 MB (peak 15) | same 0.0 CPU; −1 MB |
+| 1080p30 HEVC silent | 3.733 (4.3–4.7) | 21 MB | −0.6% CPU, same RAM (decode floor) |
+| 1080p30 HEVC audio, muted | 3.667 (4.1–4.5) | 22 MB (peak 24) | −10.0% CPU, −25 MB |
+| Paused 1080p30 HEVC | 0.200 (1.2 then 0.0×4) | 18 MB (peak 21) | CPU up (teardown sample); −1 MB |
+
+Threads (`top` #TH): idle 9 → 3; playing silent 25–28; playing muted-audio
+23–26; paused 11 → 20 (grace teardown) → 4.
+
+Muted-audio now matches silent playing (hypothesis H). Silent playing is
+still ~4.5% of one core, above the 1.5% budget. Paused RAM is still +4 MB
+vs idle (18 vs 14) but IOSurface virtual dropped (P1 ~82 MB → 15.9 MB) and
+steady paused CPU after teardown is 0.0. Verdicts: `docs/perf-findings.md`.
+
+Release executable: 4,420,368 bytes (4.22 MiB).
+
 ### Not measured here (need the operator)
 
 `sudo -n` was not available, so `powermetrics` and Energy Impact are
