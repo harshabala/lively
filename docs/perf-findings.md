@@ -50,7 +50,10 @@ same — **no** `AQMEIO_HAL::IOProc` (P1 had it). Paused `sample` after grace:
 `videomediaconverter` / `videomentor`. `vmmap`: paused IOSurface virtual
 15.9 MB (P1 ~82 MB); playing silent 75.8 MB; muted-audio 79.0 MB.
 
-## Fixture comparison (playing, 30 s `top` after settle)
+## P1 fixture comparison (2026-10-14)
+
+Historical P1 numbers (playing, 30 s `top` after settle). Not the
+2026-10-15 after-set above.
 
 | Fixture | CPU avg (last five) | `footprint` | Threads | Notes |
 |---|---|---|---|---|
