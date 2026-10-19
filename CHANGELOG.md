@@ -27,6 +27,9 @@ All notable changes to Lively are documented here. The format follows [Keep a Ch
 
 ### Changed
 
+- Muted wallpapers (the default) no longer decode their soundtrack: lower CPU and memory for clips that have audio.
+- Battery pause reacts to IOKit power-source notifications instead of a 20-second poll, so an idle Lively stays asleep.
+- `package.sh` strips local symbols from the shipped binary (4.4 MB to 1.5 MB) and writes `Lively.app.dSYM` beside the bundle; `LIVELY_NO_STRIP=1` opts out.
 - Wallpapers stop decoding while displays or the Mac sleep, the screen is locked, the screen saver runs, another user is active, or the wallpaper is fully covered, and resume automatically.
 
 ### Tests / CI

@@ -76,6 +76,15 @@ mkdir -p "${APP_BUNDLE}/Contents/Resources"
 echo "📋 Copying executable..."
 cp "${EXECUTABLE_PATH}" "${APP_BUNDLE}/Contents/MacOS/${APP_NAME}"
 
+# Keep debug symbols beside the bundle (for crash symbolication), then strip
+# local symbols from the shipped binary: about 4.4 MB -> 1.5 MB.
+# Set LIVELY_NO_STRIP=1 to ship the unstripped binary.
+if [[ "${LIVELY_NO_STRIP:-}" != "1" ]]; then
+    echo "✂️  Writing dSYM and stripping symbols..."
+    dsymutil "${EXECUTABLE_PATH}" -o "${OUTPUT_DIR}/${APP_NAME}.app.dSYM"
+    strip -x "${APP_BUNDLE}/Contents/MacOS/${APP_NAME}"
+fi
+
 if [ -f "AppIcon.icns" ]; then
     echo "🖼️ Copying App Icon..."
     cp "AppIcon.icns" "${APP_BUNDLE}/Contents/Resources/AppIcon.icns"
