@@ -53,6 +53,18 @@ struct SystemSuspensionTests {
         #expect(!WallpaperPlaybackPolicy.shouldDecode(wantsPlayback: false, isOccluded: false))
         #expect(!WallpaperPlaybackPolicy.shouldDecode(wantsPlayback: false, isOccluded: true))
     }
+
+    /// A muted AVPlayer still decodes and mixes audio; silent wallpapers must
+    /// disable their audio tracks instead.
+    @Test func audioTracksDecodeOnlyWhenAudible() {
+        #expect(WallpaperPlaybackPolicy.shouldDecodeAudio(isMuted: false, volume: 0.5))
+        #expect(!WallpaperPlaybackPolicy.shouldDecodeAudio(isMuted: true, volume: 0.5))
+        #expect(!WallpaperPlaybackPolicy.shouldDecodeAudio(isMuted: false, volume: 0))
+        #expect(!WallpaperPlaybackPolicy.shouldDecodeAudio(isMuted: true, volume: 0))
+        // Shipped default (`DynamicWallpaper()`) is silent.
+        let fresh = DynamicWallpaper()
+        #expect(!WallpaperPlaybackPolicy.shouldDecodeAudio(isMuted: fresh.isMuted, volume: fresh.volume))
+    }
 }
 
 @MainActor

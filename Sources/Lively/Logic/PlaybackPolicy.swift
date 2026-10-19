@@ -56,4 +56,10 @@ enum WallpaperPlaybackPolicy {
     static func shouldDecode(wantsPlayback: Bool, isOccluded: Bool) -> Bool {
         wantsPlayback && !isOccluded
     }
+
+    /// `AVPlayer.isMuted` still decodes and mixes the soundtrack (P1 profile:
+    /// 13.7% vs 4.4% CPU), so audio tracks stay enabled only when audible.
+    static func shouldDecodeAudio(isMuted: Bool, volume: Float) -> Bool {
+        !isMuted && volume > 0
+    }
 }

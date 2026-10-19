@@ -27,6 +27,7 @@ private final class WallpaperSession {
     private var isReady = false
     private var wantsPlayback = false
     private var isOccluded = false
+    private var audioSettings: (isMuted: Bool, volume: Float) = (true, 0)
 
     init(screen: NSScreen) {
         window = WallpaperWindow(screen: screen)
@@ -68,9 +69,11 @@ private final class WallpaperSession {
         let gravity: AVLayerVideoGravity = wallpaper.videoGravity == .fit ? .resizeAspect : .resizeAspectFill
         playerLayer.videoGravity = gravity
         
+        audioSettings = (wallpaper.isMuted, wallpaper.volume)
         if url == currentURL {
             player?.isMuted = wallpaper.isMuted
             player?.volume = wallpaper.volume
+            applyAudioTrackPolicy()
             if isReady { window.show() }
             updatePlaybackRate()
             return
@@ -142,6 +145,7 @@ private final class WallpaperSession {
                 switch status {
                 case .readyToPlay:
                     self.isReady = true
+                    self.applyAudioTrackPolicy()
                     // Only reveal the window once there is a frame to show, so a
                     // bad file never covers the desktop with a black window.
                     if self.wantsPlayback { self.window.show() }
@@ -157,6 +161,20 @@ private final class WallpaperSession {
         playerLayer.player = newPlayer
         self.player = newPlayer
         updatePlaybackRate()
+    }
+
+    /// Muting alone keeps the soundtrack decoding; disable the audio tracks
+    /// of a silent wallpaper so only video is decoded. Tracks are known once
+    /// the item is ready, so this also runs from the status observer.
+    private func applyAudioTrackPolicy() {
+        guard let item = player?.currentItem else { return }
+        let decodeAudio = WallpaperPlaybackPolicy.shouldDecodeAudio(
+            isMuted: audioSettings.isMuted,
+            volume: audioSettings.volume
+        )
+        for track in item.tracks where track.assetTrack?.mediaType == .audio {
+            if track.isEnabled != decodeAudio { track.isEnabled = decodeAudio }
+        }
     }
 
     private func handleFailure(_ error: Error, onError: @escaping @Sendable (Error) -> Void) {
