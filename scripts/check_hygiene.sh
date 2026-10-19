@@ -33,14 +33,19 @@ if git ls-files | grep -E ' [0-9]+(\.[A-Za-z0-9]+)?$'; then
   note "Finder-style duplicate file tracked"
 fi
 
-# 4. Syntax checks.
+# 4. Privacy: log lines must not carry file names or paths (AGENTS.md).
+if git ls-files 'Sources/*.swift' | xargs grep -nE 'LivelyLogger\.[a-zA-Z]+\.(info|error|debug)\(.*(lastPathComponent|\.path\b|\.name\))' 2>/dev/null; then
+  note "log call interpolates a file name or path"
+fi
+
+# 5. Syntax checks.
 plutil -lint Info.plist entitlements.plist >/dev/null || note "plist lint failed"
 for f in package.sh test.sh scripts/*.sh scripts/perf/*.sh; do
   [[ -f "$f" ]] || continue
   bash -n "$f" || note "bash syntax: $f"
 done
 
-# 5. Version sanity: Info.plist is the single source for package.sh.
+# 6. Version sanity: Info.plist is the single source for package.sh.
 v="$(plutil -extract CFBundleShortVersionString raw Info.plist)"
 echo "$v" | grep -qE '^[0-9]+\.[0-9]+\.[0-9]+$' || note "Info.plist version '$v' is not semver"
 if grep -nE 'CFBundleShortVersionString' -A1 package.sh | grep -E '<string>[0-9]'; then

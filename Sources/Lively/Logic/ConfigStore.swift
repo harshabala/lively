@@ -144,7 +144,7 @@ public class ConfigStore: ObservableObject {
                 refreshBookmark(spaceKey: spaceKey, bookmarkKey: bookmarkKey, url: resolved)
             }
             if verbose {
-                LivelyLogger.config.info("Resolved \(bookmarkKey) via security-scoped bookmark → \(resolved.lastPathComponent)")
+                LivelyLogger.config.info("Resolved \(bookmarkKey) via security-scoped bookmark")
             }
             return resolved
         } catch {
@@ -373,7 +373,7 @@ public class ConfigStore: ObservableObject {
             let backup = Self.corruptBackupURL(for: configFileURL)
             try? fm.removeItem(at: backup)
             try? fm.moveItem(at: configFileURL, to: backup)
-            LivelyLogger.config.error("Config was unreadable; moved aside to \(backup.lastPathComponent) and starting fresh: \(error.localizedDescription)")
+            LivelyLogger.config.error("Config was unreadable; moved aside to a .corrupt.json backup and starting fresh: \(error.localizedDescription)")
             configs = [:]
         }
     }

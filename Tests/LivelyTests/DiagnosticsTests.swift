@@ -9,7 +9,15 @@ struct DiagnosticsTests {
         let out = DiagnosticsRedactor.redact(text, homeDirectory: "/Users/alice")
         #expect(!out.contains("alice"))
         #expect(!out.contains("bob"))
-        #expect(out.contains("~/Movies/a.mp4"))
+        #expect(out.contains("~/Movies/<video>.mp4"))
+    }
+
+    @Test func redactorRemovesVideoFileNames() {
+        let text = "Playback failed for Holiday-2024.MOV, then beach_clip.mp4 and x.m4v"
+        let out = DiagnosticsRedactor.redact(text, homeDirectory: "/Users/alice")
+        #expect(!out.contains("Holiday"))
+        #expect(!out.contains("beach_clip"))
+        #expect(out == "Playback failed for <video>.MOV, then <video>.mp4 and <video>.m4v")
     }
 
     @Test func redactorLeavesPlainTextAlone() {
@@ -29,6 +37,7 @@ struct DiagnosticsTests {
         #expect(report.contains("Displays: 2"))
         #expect(report.contains("Previous run ended unexpectedly: yes"))
         #expect(!report.contains("alice"))
+        #expect(!report.contains("secret"))
         // Preferences are listed in a stable, sorted order.
         let a = report.range(of: "a = 1")!.lowerBound
         let b = report.range(of: "b = 2")!.lowerBound

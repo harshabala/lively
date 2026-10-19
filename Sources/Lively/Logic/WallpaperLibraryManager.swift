@@ -86,7 +86,7 @@ public final class WallpaperLibraryManager: ObservableObject {
         )
         items.insert(item, at: 0)
         saveIndex()
-        LivelyLogger.wallpaper.info("Added library wallpaper: \(item.name)")
+        LivelyLogger.wallpaper.info("Added library wallpaper")
         return item
     }
 
@@ -95,7 +95,7 @@ public final class WallpaperLibraryManager: ObservableObject {
         let url = fileURL(for: item)
         try? fileManager.removeItem(at: url)
         saveIndex()
-        LivelyLogger.wallpaper.info("Removed library wallpaper: \(item.name)")
+        LivelyLogger.wallpaper.info("Removed library wallpaper")
     }
 
     public func rename(_ item: LibraryWallpaper, to name: String) {

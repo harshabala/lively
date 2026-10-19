@@ -14,6 +14,12 @@ public enum DiagnosticsRedactor {
             let range = NSRange(result.startIndex..., in: result)
             result = regex.stringByReplacingMatches(in: result, range: range, withTemplate: "~")
         }
+        // Video file names are personal too; keep only the extension.
+        let videoName = #"[^\s/"']+\.(mp4|mov|m4v)\b"#
+        if let regex = try? NSRegularExpression(pattern: videoName, options: [.caseInsensitive]) {
+            let range = NSRange(result.startIndex..., in: result)
+            result = regex.stringByReplacingMatches(in: result, range: range, withTemplate: "<video>.$1")
+        }
         return result
     }
 }

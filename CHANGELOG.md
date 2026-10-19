@@ -14,6 +14,7 @@ All notable changes to Lively are documented here. The format follows [Keep a Ch
 
 ### Fixed
 
+- **Video file names no longer reach the system log or the diagnostics report.** Log lines used to name the clip that failed or was scoped, and these lines are public in the unified log; every log line is now redacted before it is written.
 - **Per-Space and per-display assignments were being deleted.** Switching Spaces, unplugging a monitor, or launching without it wiped the clips assigned to the Spaces/displays not currently visible. They now persist.
 - **Update check is opt-in, as documented.** Earlier builds turned it on at first launch. Existing installs are switched off once; turn it back on in Settings if you want it.
 - Library imports now get the same H.264/HEVC check as display cards; damaged or truncated files are rejected with a clear message everywhere.

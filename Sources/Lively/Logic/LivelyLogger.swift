@@ -96,7 +96,10 @@ public struct LivelyCategoryLogger: Sendable {
     public func error(_ message: String) { log(.error, message) }
     public func debug(_ message: String) { log(.debug, message) }
 
-    private func log(_ level: LogLevel, _ message: String) {
+    private func log(_ level: LogLevel, _ rawMessage: String) {
+        // Errors from AVFoundation and Foundation often quote the file name,
+        // and these lines are `.public` in the unified log, so redact first.
+        let message = DiagnosticsRedactor.redact(rawMessage)
         switch level {
         case .info: osLogger.info("\(message, privacy: .public)")
         case .warning: osLogger.warning("\(message, privacy: .public)")

@@ -161,7 +161,7 @@ private final class WallpaperSession {
 
     private func handleFailure(_ error: Error, onError: @escaping @Sendable (Error) -> Void) {
         guard let url = currentURL else { return }
-        LivelyLogger.wallpaper.error("Playback failed for \(url.lastPathComponent): \(error.localizedDescription)")
+        LivelyLogger.wallpaper.error("Playback failed: \(error.localizedDescription)")
         failedURL = url
         currentURL = nil
         tearDownPlayer()
@@ -293,7 +293,7 @@ private final class BookmarkManager {
     func stopScope(for spaceKey: String) {
         if let oldURL = activeScopes.removeValue(forKey: spaceKey) {
             oldURL.stopAccessingSecurityScopedResource()
-            LivelyLogger.wallpaper.info("Security scope stopped for \(oldURL.lastPathComponent)")
+            LivelyLogger.wallpaper.info("Security scope stopped")
         }
     }
 
@@ -319,7 +319,7 @@ private final class BookmarkManager {
         let didStart = url.startAccessingSecurityScopedResource()
         if didStart {
             activeScopes[spaceKey] = url
-            LivelyLogger.wallpaper.info("Security scope started for \(url.lastPathComponent)")
+            LivelyLogger.wallpaper.info("Security scope started")
         }
     }
 }

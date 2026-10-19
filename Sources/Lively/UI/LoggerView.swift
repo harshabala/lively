@@ -248,7 +248,7 @@ public struct LoggerView: View {
             guard response == .OK, let url = panel.url else { return }
             do {
                 try diagnosticsText().write(to: url, atomically: true, encoding: .utf8)
-                LivelyLogger.config.info("Exported logs to \(url.lastPathComponent)")
+                LivelyLogger.config.info("Exported diagnostics report")
             } catch {
                 LivelyLogger.config.error("Failed to export logs: \(error.localizedDescription)")
             }

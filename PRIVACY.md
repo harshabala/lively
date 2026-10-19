@@ -18,7 +18,8 @@ Lively works entirely on your Mac.
 
 **Diagnostics.** "Copy Logs" and "Download Logs" create a text report you can attach to
 an issue. It contains the app and macOS version, display count, a few settings and recent
-log lines with home-folder paths replaced by `~`. Review it before sharing; Lively never
+log lines with home-folder paths replaced by `~` and video file names replaced by
+`<video>`. Lively's own log lines never name your files. Review it before sharing; Lively never
 sends it for you.
 
 **Removing data.** Settings > Reset Data deletes the folder above and restores preferences.
