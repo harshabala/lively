@@ -125,3 +125,26 @@ xctrace record --template 'Time Profiler' --time-limit 30s \
 Or Activity Monitor: select Lively → Energy tab (Energy Impact, Idle
 Wake Ups) while the harness is running (`LIVELY_PERF_SKIP_BUILD=1
 scripts/perf/measure.sh playing 60`).
+
+## H, A and N landed (2026-10-19)
+
+Same host, harness and 5K display. 30 s playing / 45 s idle windows.
+JSON prefix `20261019T05` (the run directories are named after `HEAD` at
+launch time, so the "after H" run is labelled `42eab64` but packaged the
+working tree that became `d7da992`).
+
+| Run | Before (same day, `42eab64`) | After | Change |
+|---|---|---|---|
+| 1080p30 HEVC + AAC, muted: CPU avg | 4.633 (4.6–6.9) | 3.367 (3.6–5.1) | H: audio tracks disabled |
+| … `footprint` | 26 MB (peak 27) | 23 MB (peak 25) | |
+| … threads | 31–36 | 23–24 | |
+| … AudioToolbox / AQMEIO / AudioUnit frames in `sample(1)` | 499 | 3 | |
+| Idle 45 s: CPU / `footprint` | P1: 0.0 / 15 MB, one `__NSFireTimer` in 25 s | 0.0 / 14 MB, no timer callouts in 25 s | A: IOKit notifications |
+| Release executable | 4,365,664 bytes | 1,499,280 bytes | N: `strip -x`, dSYM kept |
+| 1080p30 HEVC silent, stripped binary: CPU / `footprint` | P1: 4.367 / 21 MB | 3.633 / 21 MB | no regression (difference is within run-to-run noise) |
+
+The muted-audio cost was much smaller today (4.6%) than in P1 (13.7%)
+with a freshly generated fixture; the P1 number is kept above as
+recorded. Playing CPU is still above the 1.5% budget: the remaining cost
+is AVFoundation decode of the video stream. Next levers are J (smaller
+stream) and G (looper), see `docs/perf-findings.md`.

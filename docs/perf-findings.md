@@ -65,7 +65,15 @@ IOSurface virtual; 4K playing maps 466 MB IOSurface virtual.
 | **M** | **Partial** | Ephemeral `URLSession` already; still launch-time if opted in. Default is off; perf harness skips it. | P5 |
 | **N** | **Confirmed** | Executable 4,366,496 bytes. `package.sh` is `swift build -c release` with no `-Osize` / strip. | P6 |
 
-## Ranked next work
+## Status (2026-10-19)
+
+- **H done** (`d7da992`): silent wallpapers disable audio tracks. Muted AAC clip 4.6% -> 3.4% CPU, 26 -> 23 MB.
+- **A done** (`a90cee6`): `PowerSourceObserver` (IOKit run loop source) replaces the 20 s timer; idle `sample(1)` has no timer callouts.
+- **N partly done** (`e08655f`): `strip -x` + dSYM, 4.37 MB -> 1.50 MB. `-Osize` not tried.
+- **E skipped**: `SpaceConfig` is not `Equatable`, and re-choosing the same file must still retry; dropping "duplicate" publishes risks that without a measured win.
+- Numbers: `docs/PERFORMANCE.md` "H, A and N landed".
+
+## Ranked next work (as of P1)
 
 1. **P4 / H** — when muted, disable audio `AVPlayerItemTrack`s (or strip on import). Biggest measured CPU and RAM win on files that have a soundtrack. Default wallpaper is muted.
 2. **P4 / J** — transcode or cap to 1080p30 (honour `maxResolution`). 4K60 is already ~1.6× the 1080p30 CPU and a much larger IOSurface. Do not transcode up to 5K.
