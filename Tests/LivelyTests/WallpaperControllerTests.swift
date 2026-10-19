@@ -59,3 +59,17 @@ struct WallpaperControllerTests {
         #expect(!controller.isPaused, "Controller should be playing after second toggle")
     }
 }
+
+@MainActor
+struct PowerSourceObserverTests {
+
+    /// Battery pause is driven by IOKit notifications, not a polling timer.
+    @Test func registersWithIOKitAndInvalidatesIdempotently() {
+        let observer = PowerSourceObserver { }
+        #expect(observer.isActive)
+        observer.invalidate()
+        #expect(!observer.isActive)
+        observer.invalidate()
+        #expect(!observer.isActive)
+    }
+}

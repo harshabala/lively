@@ -450,7 +450,7 @@ public final class WallpaperController: ObservableObject {
     
     private var appearanceObserver: AnyCancellable?
     private var thermalStateObserver: AnyCancellable?
-    private var powerSourceTimer: Timer?
+    private var powerSourceObserver: PowerSourceObserver?
     private var systemSuspension = SystemSuspension()
 
     // MARK: - Init
@@ -498,8 +498,8 @@ public final class WallpaperController: ObservableObject {
         appearanceObserver = nil
         thermalStateObserver?.cancel()
         thermalStateObserver = nil
-        powerSourceTimer?.invalidate()
-        powerSourceTimer = nil
+        powerSourceObserver?.invalidate()
+        powerSourceObserver = nil
         cancellables.removeAll()
     }
 
@@ -560,14 +560,11 @@ public final class WallpaperController: ObservableObject {
     }
 
     private func setupBatteryMonitor() {
-        // IOKit has no simple Combine publisher; 20s is enough for battery pause.
-        powerSourceTimer = Timer.scheduledTimer(withTimeInterval: 20, repeats: true) { [weak self] _ in
-            Task { @MainActor [weak self] in
-                self?.refreshBatteryState()
-            }
+        // IOKit pushes power source changes (AC/battery, charge level), so no
+        // polling timer wakes the app while it sits idle.
+        powerSourceObserver = PowerSourceObserver { [weak self] in
+            self?.refreshBatteryState()
         }
-        // Let the OS coalesce wake-ups; exact timing doesn't matter here.
-        powerSourceTimer?.tolerance = 5
         // Also refresh when Low Power Mode changes (related power policy signal).
         NotificationCenter.default.publisher(for: Notification.Name("NSProcessInfoPowerStateDidChange"))
             .receive(on: DispatchQueue.main)
@@ -830,6 +827,48 @@ public final class WallpaperController: ObservableObject {
 }
 
 // MARK: - Power Source
+
+/// Calls `onChange` on the main run loop whenever IOKit reports a power
+/// source change. The run loop source retains the context box until
+/// `invalidate()`, so the C callback never sees a freed object.
+@MainActor
+final class PowerSourceObserver {
+    private final class Box {
+        let onChange: @MainActor () -> Void
+        init(_ onChange: @escaping @MainActor () -> Void) { self.onChange = onChange }
+    }
+
+    private var source: CFRunLoopSource?
+    private var context: Unmanaged<Box>?
+
+    init(onChange: @escaping @MainActor () -> Void) {
+        let box = Unmanaged.passRetained(Box(onChange))
+        guard let source = IOPSNotificationCreateRunLoopSource({ raw in
+            guard let raw else { return }
+            let box = Unmanaged<Box>.fromOpaque(raw).takeUnretainedValue()
+            // Added to the main run loop below, so this runs on the main thread.
+            MainActor.assumeIsolated { box.onChange() }
+        }, box.toOpaque())?.takeRetainedValue() else {
+            box.release()
+            LivelyLogger.wallpaper.error("Power source notifications unavailable; battery pause updates on wake and Low Power Mode only")
+            return
+        }
+        CFRunLoopAddSource(CFRunLoopGetMain(), source, .commonModes)
+        self.source = source
+        self.context = box
+    }
+
+    var isActive: Bool { source != nil }
+
+    func invalidate() {
+        if let source {
+            CFRunLoopSourceInvalidate(source)
+        }
+        source = nil
+        context?.release()
+        context = nil
+    }
+}
 
 enum PowerSourceMonitor {
     struct Snapshot {
