@@ -94,3 +94,12 @@ P2 remains the next *named phase* in the master plan. Measured impact says **H b
   `LIVELY_APPLICATION_SUPPORT`, `LIVELY_CONFIG_FILE`, throwaway
   `com.lively.app.perf` UserDefaults.
 - Canonical idle/playing/paused budget table: `docs/PERFORMANCE.md`.
+
+## Workstream 1 (2026-11-16)
+
+Measurements and caveats (high machine load): `docs/PERFORMANCE.md`, section
+"Workstream 1 pass". B (cold pause) re-implemented as `184b282`: paused
+threads 8 -> 4, IOSurface 82 -> 16 MB, footprint 21 -> 19-20 MB. Low Power
+Mode now pauses. Negative result: none of this lowers playing CPU (3.3-4.6 %
+before and after). Still open: decode floor (needs a smaller stream or loop
+change, G/J, owner's 4K policy), wake-ups and energy (sudo).

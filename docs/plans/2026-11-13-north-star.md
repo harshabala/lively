@@ -54,6 +54,7 @@ Gaps, from the October plan:
 ### 1. Meet the performance budget (scenario 1)
 - Continue the ranked hypotheses in `perf-findings.md`. Pause fully when the desktop is not
   visible; release media resources when paused; respect low power mode and battery.
+- 2026-11-16 (agent): release paused players with a poster frame and pause on Low Power Mode (`184b282`; policy tests in `ColdPausePolicyTests`, 107 tests green via `./scripts/smoke_verify.sh`). Harness, back to back, load 6-13: paused threads 8 to 4, IOSurface virtual 82 MB to 16 MB, footprint 21 to 19-20 MB, CPU still 0.0-0.1. Playing CPU unchanged (about 3.3-4.6 % vs 1.5 % budget); budget NOT met. Energy not measured (needs sudo). Not hardware-checked: poster flash on resume, covered/full-screen release.
 - **Done when:** the harness shows playing within budget and covered or asleep near zero, and an
   energy measurement on the owner's Mac confirms it.
 

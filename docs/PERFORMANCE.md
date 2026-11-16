@@ -148,3 +148,41 @@ with a freshly generated fixture; the P1 number is kept above as
 recorded. Playing CPU is still above the 1.5% budget: the remaining cost
 is AVFoundation decode of the video stream. Next levers are J (smaller
 stream) and G (looper), see `docs/perf-findings.md`.
+
+## Workstream 1 pass (2026-11-16, branch `agent/north-star`)
+
+Host: Apple M1, macOS 27, CLT only. **Machine load was high** (`uptime` 1-minute
+load 2.7-13.6 during runs; October runs were quiet), so absolute CPU is
+unreliable and runs are shown as before/after pairs taken back to back with
+two packaged apps (baseline `a56a8fa` vs `184b282`). Harness: `measure.sh`
+30 s, steady CPU = `top` rows after the first. Real `config_v2.json` checksum
+`2558921003 1531` before and after. `powermetrics` skipped (needs sudo);
+`xctrace` unavailable (CLT).
+
+| Run | Before (`a56a8fa`) | After (`184b282`) |
+|---|---|---|
+| Playing 1080p30 HEVC, steady CPU % | 4.48, 4.88, 5.54 (load 5-6); 4.56, 3.28 (load 6-10) | 4.44, 3.28, 4.10 (load 6-10) |
+| Playing footprint | 22-23 MB | 22-23 MB |
+| Paused CPU % | 0.0, 0.0, 0.08 | 0.0, 0.1, 0.0 |
+| Paused footprint | 21, 21, 21 MB | 20, 20, 19 MB |
+| Paused threads / IOSurface virtual | 8 / 82.1 MB | 4 / 16.0 MB |
+
+What changed: paused/covered sessions release the player after a grace
+(system 2 s, user 3 s, battery/thermal/Low Power 5 s, covered 10 s), leaving a
+1080p-capped still on a layer; resume rebuilds and keeps the still until the
+first frame. Low Power Mode now halts playback. Decision logic is in
+`PlaybackPolicy.swift`, tested in `ColdPausePolicyTests`.
+
+Result: paused retention fell (threads, IOSurface); paused CPU was already 0.
+**Playing CPU did not change**: the decode floor of about 3.3-4.6 % of one core
+(1.5 % budget) is untouched and the budget is NOT met. Already present on
+master before this pass: pause on occlusion, sleep, lock, screen saver, user
+switch, battery and thermal; audio tracks off when muted.
+
+Not done, with reasons: decode at display resolution (`preferredMaximumResolution`
+is documented for adaptive streams, so a local file is unlikely to shrink;
+would need a video composition or transcode, which touches the 4K policy, an
+owner decision; not tried). Reduce Motion left alone. Not hardware-verified:
+poster flash on resume, full-screen-app release, second display. A finished
+alternative cold-pause implementation exists on `perf/open-items` (`c6a3574`,
+`4c0a711`) with its own measurements; I did not use it.

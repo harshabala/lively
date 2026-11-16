@@ -6,6 +6,8 @@ All notable changes to Lively are documented here. The format follows [Keep a Ch
 
 ### Added
 
+- Paused, covered, asleep or locked wallpapers now release their video player after a short grace period and keep a still frame on screen; the decoder, queues and IOSurface memory are freed and rebuilt on resume.
+- Wallpapers pause while macOS Low Power Mode is on (no new setting; resumes when it is turned off).
 - Logs export now produces a redacted diagnostics report (versions, display count, settings, recent log, home paths replaced by `~`).
 - The app notices when the previous run ended unexpectedly and records it in the log and report.
 - Preferences carry a schema version for future migrations.
