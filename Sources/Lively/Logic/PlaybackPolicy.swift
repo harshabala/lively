@@ -63,3 +63,63 @@ enum WallpaperPlaybackPolicy {
         !isMuted && volume > 0
     }
 }
+
+/// Why the controller is halting playback (as opposed to the window being
+/// covered, which each session tracks itself).
+enum PlaybackHaltReason: String, CaseIterable, Sendable {
+    case system
+    case userPause
+    case thermal
+    case battery
+    case lowPowerMode
+}
+
+enum PlaybackHaltPolicy {
+    /// First matching reason wins; nil means playback may run.
+    static func reason(
+        isPaused: Bool,
+        isThrottled: Bool,
+        isBatteryPaused: Bool,
+        isLowPowerMode: Bool,
+        isSystemSuspended: Bool
+    ) -> PlaybackHaltReason? {
+        if isSystemSuspended { return .system }
+        if isPaused { return .userPause }
+        if isThrottled { return .thermal }
+        if isBatteryPaused { return .battery }
+        if isLowPowerMode { return .lowPowerMode }
+        return nil
+    }
+}
+
+/// When a paused player is released (decoder, queues and IOSurfaces freed,
+/// a still frame left on the layer) instead of being held.
+enum ColdPausePolicy {
+    /// Window covered by other windows or a full-screen app. Longer, so
+    /// flicking between windows does not rebuild the decoder each time.
+    static let occlusionGrace: Duration = .seconds(10)
+
+    static func grace(for reason: PlaybackHaltReason) -> Duration {
+        switch reason {
+        case .system: return .seconds(2)
+        case .userPause: return .seconds(3)
+        case .thermal, .battery, .lowPowerMode: return .seconds(5)
+        }
+    }
+
+    /// Release only while nothing wants frames and a still frame exists, so a
+    /// visible desktop never goes blank.
+    static func shouldRelease(
+        shouldDecode: Bool,
+        playerExists: Bool,
+        hasPosterFrame: Bool
+    ) -> Bool {
+        !shouldDecode && playerExists && hasPosterFrame
+    }
+
+    /// A released session rebuilds its player only when it should decode
+    /// again; a config sync while covered or paused must not bring it back.
+    static func shouldRebuild(shouldDecode: Bool, playerExists: Bool) -> Bool {
+        shouldDecode && !playerExists
+    }
+}
