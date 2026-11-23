@@ -167,7 +167,7 @@ private struct DisplayPreviewCard: View {
                                 .foregroundStyle(LivelyBrand.mutedForeground)
                             if frame.height > 56 {
                                 Text("No wallpaper")
-                                    .font(.system(size: 9, weight: .medium))
+                                    .font(.system(size: 11, weight: .medium))
                                     .foregroundStyle(LivelyBrand.mutedForeground)
                             }
                         }

@@ -61,7 +61,7 @@ enum LivelyBrand {
         static let caption = Font.system(size: 12, weight: .medium)
         static let footnote = Font.system(size: 11, weight: .regular)
         static let mono = Font.system(size: 11, weight: .medium, design: .monospaced)
-        static let badge = Font.system(size: 9, weight: .bold)
+        static let badge = Font.system(size: 11, weight: .bold)
         static let iconSmall = Font.system(size: 16, weight: .medium)
         static let iconControl = Font.system(size: 14, weight: .medium)
         static let iconLarge = Font.system(size: 28, weight: .light)
