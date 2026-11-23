@@ -54,6 +54,23 @@ public class SpaceMonitor: ObservableObject {
             .publisher(for: NSApplication.didChangeScreenParametersNotification)
             .sink { [weak self] _ in self?.refresh() }
             .store(in: &cancellables)
+
+        // App becomes active (e.g. returning from System Settings after granting Screen Recording permission)
+        NSWorkspace.shared.notificationCenter
+            .publisher(for: NSWorkspace.didActivateApplicationNotification)
+            .sink { [weak self] _ in self?.refresh() }
+            .store(in: &cancellables)
+
+        // Live polling when permissions are missing / displays empty
+        Timer.publish(every: 2.0, on: .main, in: .common)
+            .autoconnect()
+            .sink { [weak self] _ in
+                guard let self = self else { return }
+                if self.screenSpaces.isEmpty || self.screenSpaces.contains(where: { $0.desktopImageURL == nil }) {
+                    self.refresh()
+                }
+            }
+            .store(in: &cancellables)
     }
 
     // MARK: - Public
