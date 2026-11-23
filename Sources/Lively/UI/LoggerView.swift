@@ -95,7 +95,7 @@ public struct LoggerView: View {
                     )
                 }
                 .buttonStyle(PressScaleButtonStyle())
-                .focusEffectDisabled()
+                .livelyFocusRing(cornerRadius: LivelyBrand.Radius.sm)
                 .disabled(logStore.entries.isEmpty)
                 .accessibilityLabel(isCopied ? "Logs copied" : "Copy logs")
 
@@ -110,7 +110,7 @@ public struct LoggerView: View {
                         Text("Download Logs")
                             .font(LivelyBrand.Typography.caption.weight(.semibold))
                     }
-                    .foregroundStyle(Color.white)
+                    .foregroundStyle(LivelyBrand.onPrimary)
                     .padding(.horizontal, 14)
                     .padding(.vertical, 8)
                     .background(
@@ -119,7 +119,7 @@ public struct LoggerView: View {
                     )
                 }
                 .buttonStyle(PressScaleButtonStyle())
-                .focusEffectDisabled()
+                .livelyFocusRing(cornerRadius: LivelyBrand.Radius.sm)
                 .disabled(logStore.entries.isEmpty)
                 .accessibilityLabel("Download logs")
             }
@@ -214,7 +214,7 @@ public struct LoggerView: View {
                     .padding(.vertical, 8)
                 }
                 .buttonStyle(PressScaleButtonStyle())
-                .focusEffectDisabled()
+                .livelyFocusRing(cornerRadius: LivelyBrand.Radius.sm)
             }
 
             if isExpanded {

@@ -74,7 +74,6 @@ public struct DisplaysView: View {
             RoundedRectangle(cornerRadius: LivelyBrand.Radius.md)
                 .strokeBorder(LivelyBrand.primary.opacity(0.22), lineWidth: 1)
         )
-        .accessibilityElement(children: .combine)
     }
 
     private var screensSection: some View {

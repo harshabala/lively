@@ -105,7 +105,7 @@ public struct LibraryView: View {
                         Text("Add Wallpaper")
                             .font(LivelyBrand.Typography.caption.weight(.semibold))
                     }
-                    .foregroundStyle(Color.white)
+                    .foregroundStyle(LivelyBrand.onPrimary)
                     .padding(.horizontal, LivelyBrand.Spacing.lg)
                     .frame(minHeight: LivelyBrand.Spacing.controlMin)
                     .background(
@@ -142,7 +142,7 @@ public struct LibraryView: View {
             } label: {
                 Text("Add Your First Wallpaper")
                     .font(LivelyBrand.Typography.caption.weight(.semibold))
-                    .foregroundStyle(Color.white)
+                    .foregroundStyle(LivelyBrand.onPrimary)
                     .padding(.horizontal, LivelyBrand.Spacing.lg)
                     .frame(minHeight: LivelyBrand.Spacing.controlMin)
                     .background(
@@ -270,7 +270,7 @@ public struct LibraryView: View {
                     .foregroundStyle(LivelyBrand.mutedForeground)
             }
             .buttonStyle(.plain)
-            .focusEffectDisabled()
+            .livelyFocusRing(cornerRadius: LivelyBrand.Radius.sm)
         }
         .padding(LivelyBrand.Spacing.md)
         .background(
@@ -295,6 +295,8 @@ public struct LibraryCard: View {
     public let onRemove: @MainActor () -> Void
 
     @ViewState private var isHovered = false
+    @ViewState private var showRemoveConfirm = false
+    @ViewState private var showApplyAllConfirm = false
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     public var body: some View {
@@ -333,7 +335,7 @@ public struct LibraryCard: View {
                     }
 
                     Button {
-                        onRemove()
+                        showRemoveConfirm = true
                     } label: {
                         Image(systemName: "trash.circle.fill")
                             .font(.system(size: 28, weight: .regular))
@@ -373,7 +375,7 @@ public struct LibraryCard: View {
 
                         if showApplyAll {
                             Button {
-                                onApplyAll(fileURL)
+                                showApplyAllConfirm = true
                             } label: {
                                 Text("All displays")
                                     .font(LivelyBrand.Typography.caption.weight(.medium))
@@ -392,7 +394,7 @@ public struct LibraryCard: View {
                     Spacer(minLength: 0)
 
                     Button {
-                        onRemove()
+                        showRemoveConfirm = true
                     } label: {
                         Text("Remove")
                             .font(LivelyBrand.Typography.caption.weight(.medium))
@@ -418,5 +420,29 @@ public struct LibraryCard: View {
         .accessibilityElement(children: .contain)
         .accessibilityLabel("\(item.name) wallpaper")
         .accessibilityHint("Apply to the selected display, or remove from the library.")
+        .confirmationDialog(
+            "Remove from library?",
+            isPresented: $showRemoveConfirm,
+            titleVisibility: .visible
+        ) {
+            Button("Remove", role: .destructive) {
+                onRemove()
+            }
+            Button("Cancel", role: .cancel) {}
+        } message: {
+            Text("This deletes the saved copy of \(item.name) from your library. Your original video file is not touched.")
+        }
+        .confirmationDialog(
+            "Apply this wallpaper to every connected display?",
+            isPresented: $showApplyAllConfirm,
+            titleVisibility: .visible
+        ) {
+            Button("Apply to All Displays") {
+                if let fileURL {
+                    onApplyAll(fileURL)
+                }
+            }
+            Button("Cancel", role: .cancel) {}
+        }
     }
 }

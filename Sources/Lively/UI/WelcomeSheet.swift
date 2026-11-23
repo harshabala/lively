@@ -39,6 +39,7 @@ struct WelcomeSheet: View {
                 Button("Not now") {
                     onDismiss()
                 }
+                .keyboardShortcut(.cancelAction)
                 .buttonStyle(PressScaleButtonStyle())
                 .livelyFocusRing()
                 .font(LivelyBrand.Typography.caption.weight(.medium))
@@ -53,7 +54,7 @@ struct WelcomeSheet: View {
                 } label: {
                     Text("Choose a Video…")
                         .font(LivelyBrand.Typography.caption.weight(.semibold))
-                        .foregroundStyle(.white)
+                        .foregroundStyle(LivelyBrand.onPrimary)
                         .padding(.horizontal, LivelyBrand.Spacing.lg)
                         .frame(minHeight: LivelyBrand.Spacing.controlMin)
                         .background(RoundedRectangle(cornerRadius: LivelyBrand.Radius.sm).fill(LivelyBrand.primary))
@@ -76,6 +77,9 @@ struct WelcomeSheet: View {
         )
         .shadow(color: LivelyBrand.Shadow.color, radius: 16, x: 0, y: 8)
         .accessibilityElement(children: .contain)
+        .accessibilityAddTraits(.isModal)
+        .accessibilityAction(.escape, onDismiss)
+        .onExitCommand(perform: onDismiss)
     }
 
     private func bullet(icon: String, text: String) -> some View {

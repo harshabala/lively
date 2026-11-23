@@ -54,6 +54,9 @@ public struct SettingsContainerView: View {
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .animation(reduceMotion ? nil : LivelyBrand.Motion.normal, value: selectedTab)
             }
+            .disabled(!preferences.hasCompletedWelcome)
+            .allowsHitTesting(preferences.hasCompletedWelcome)
+            .accessibilityHidden(!preferences.hasCompletedWelcome)
 
             if !preferences.hasCompletedWelcome {
                 Color.black.opacity(0.28)
@@ -161,9 +164,9 @@ public struct SettingsContainerView: View {
             }
             .contentShape(Rectangle())
         }
-        // Suppress system focus ring on segmented chrome (blue rect regression).
+        // Brand ring instead of the system blue rect on segmented chrome.
         .buttonStyle(PressScaleButtonStyle())
-        .focusEffectDisabled()
+        .livelyFocusRing(cornerRadius: LivelyBrand.Radius.sm)
         .accessibilityLabel(title)
         .accessibilityAddTraits(isSelected ? .isSelected : [])
     }
@@ -198,7 +201,7 @@ public struct SettingsContainerView: View {
             .contentShape(Capsule())
         }
         .buttonStyle(PressScaleButtonStyle())
-        .focusEffectDisabled()
+        .livelyFocusRing(cornerRadius: LivelyBrand.Spacing.controlMin / 2)
     }
 
     // MARK: - Status banners
@@ -244,7 +247,7 @@ public struct SettingsContainerView: View {
         case .thermal:
             statusBanner(
                 icon: "thermometer.medium",
-                text: "Mac running hot. Lively paused to save battery.",
+                text: WallpaperController.thermalPauseNotice,
                 color: Color(nsColor: .systemOrange)
             )
         case .battery:
@@ -258,7 +261,7 @@ public struct SettingsContainerView: View {
         case .manualPause:
             statusBanner(
                 icon: "pause.circle.fill",
-                text: "Wallpapers paused. Press Resume Lively to play again.",
+                text: "Wallpapers paused. Press Resume to play again.",
                 color: LivelyBrand.mutedForeground
             )
         }
@@ -288,14 +291,13 @@ public struct SettingsContainerView: View {
             .buttonStyle(.plain)
             .font(LivelyBrand.Typography.caption.weight(.semibold))
             .foregroundStyle(LivelyBrand.primary)
-            .focusEffectDisabled()
+            .livelyFocusRing(cornerRadius: LivelyBrand.Radius.sm)
             .accessibilityLabel("View update on GitHub")
         }
         .padding(.vertical, LivelyBrand.Spacing.sm)
         .padding(.horizontal, LivelyBrand.Spacing.lg)
         .frame(maxWidth: .infinity, minHeight: LivelyBrand.Spacing.controlMin + LivelyBrand.Spacing.xs, alignment: .leading)
         .background(LivelyBrand.primary.opacity(0.12))
-        .accessibilityElement(children: .combine)
     }
 
     private func statusBanner(icon: String, text: String, color: Color) -> some View {

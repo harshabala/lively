@@ -459,10 +459,12 @@ public struct PreferencesView: View {
                 Text(title)
                     .font(LivelyBrand.Typography.body.weight(.semibold))
                     .foregroundStyle(LivelyBrand.foreground)
+                    .accessibilityHidden(true)
                 Text(subtitle)
                     .font(LivelyBrand.Typography.caption)
                     .foregroundStyle(LivelyBrand.mutedForeground)
                     .fixedSize(horizontal: false, vertical: true)
+                    .accessibilityHidden(true)
             }
             Spacer(minLength: 8)
             Toggle("", isOn: isOn)
@@ -470,11 +472,10 @@ public struct PreferencesView: View {
                 .tint(LivelyBrand.primary)
                 .labelsHidden()
                 .accessibilityLabel(title)
-                .accessibilityValue(isOn.wrappedValue ? "On" : "Off")
+                .accessibilityHint(subtitle)
         }
         .padding(.vertical, 10)
-        .accessibilityElement(children: .combine)
-        .accessibilityHint(subtitle)
+        .accessibilityElement(children: .contain)
     }
 
     private func pickerRow<T: Hashable>(
@@ -488,10 +489,12 @@ public struct PreferencesView: View {
                 Text(title)
                     .font(LivelyBrand.Typography.body.weight(.semibold))
                     .foregroundStyle(LivelyBrand.foreground)
+                    .accessibilityHidden(true)
                 Text(subtitle)
                     .font(LivelyBrand.Typography.caption)
                     .foregroundStyle(LivelyBrand.mutedForeground)
                     .fixedSize(horizontal: false, vertical: true)
+                    .accessibilityHidden(true)
             }
             Spacer(minLength: 8)
             Picker("", selection: selection) {
@@ -503,10 +506,10 @@ public struct PreferencesView: View {
             .pickerStyle(.menu)
             .frame(minWidth: 128)
             .accessibilityLabel(title)
+            .accessibilityHint(subtitle)
         }
         .padding(.vertical, 10)
-        .accessibilityElement(children: .combine)
-        .accessibilityHint(subtitle)
+        .accessibilityElement(children: .contain)
     }
 
     private func errorBanner(_ message: String) -> some View {

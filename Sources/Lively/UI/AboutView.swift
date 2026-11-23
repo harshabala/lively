@@ -127,7 +127,7 @@ public struct AboutView: View {
             .contentShape(Rectangle())
         }
         .buttonStyle(PressScaleButtonStyle())
-        .focusEffectDisabled()
+        .livelyFocusRing(cornerRadius: LivelyBrand.Radius.sm)
         .disabled(url == nil)
         .accessibilityLabel(title)
         .accessibilityHint("Opens in browser")

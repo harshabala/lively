@@ -1,5 +1,11 @@
 # Agent log
 
+## 2026-11-23
+
+- Fixed Impeccable accessibility and copy findings on `agent/north-star`. Did not launch the app. Did not write `config_v2.json`. Did not view a screen.
+- VoiceOver: settings switches and menus stay actions; welcome hides Pause, Quit, and tabs and dismisses with Escape (same as Not now); Dismiss, Reselect, and View are their own controls; focus rings restored where `focusEffectDisabled` had removed them.
+- Playback error clears "Playing on this display". Library Remove and All displays confirm before delete or overwrite. Heat pause copy says heat, not battery. Pause banner says Resume, matching the control. Dark primary labels use near-black `onPrimary`, not white on `#55CAD0`. Light `#007078` unchanged. No new on-screen contrast measurement.
+
 ## 2026-11-18
 
 - Stopped. Branch `agent/north-star` at `7f79776`. `./scripts/smoke_verify.sh` exit 0: 107 tests passed, release app packaged and signed. Did not launch the app. Did not write `config_v2.json`.

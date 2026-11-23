@@ -29,11 +29,11 @@ struct ScreenSetupPreviewView: View {
                     HStack {
                         Text("Open Displays to assign wallpapers")
                             .font(LivelyBrand.Typography.caption.weight(.semibold))
-                            .foregroundStyle(Color.white)
+                            .foregroundStyle(LivelyBrand.onPrimary)
                         Spacer()
                         Image(systemName: "chevron.right")
                             .font(.system(size: 11, weight: .semibold))
-                            .foregroundStyle(Color.white.opacity(0.9))
+                            .foregroundStyle(LivelyBrand.onPrimary)
                     }
                     .padding(.horizontal, LivelyBrand.Spacing.lg)
                     .padding(.vertical, 12)
@@ -43,7 +43,7 @@ struct ScreenSetupPreviewView: View {
                     )
                 }
                 .buttonStyle(PressScaleButtonStyle())
-                .focusEffectDisabled()
+                .livelyFocusRing(cornerRadius: LivelyBrand.Radius.md)
                 .accessibilityLabel("Open Displays to assign wallpapers")
                 .accessibilityHint("Switches to the Displays tab")
             }

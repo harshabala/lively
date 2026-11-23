@@ -531,7 +531,10 @@ public final class WallpaperController: ObservableObject {
     // MARK: - Public State
 
     @Published public private(set) var isPaused = false
+    /// True when playback is paused because the Mac is hot (serious or critical thermal state), not because of battery.
     @Published public private(set) var isThrottled = false
+    /// Banner copy for a heat pause. Says heat, not battery.
+    public static let thermalPauseNotice = "Mac running hot. Lively paused until it cools down."
     /// True when wallpapers are paused due to battery policy (threshold or hard 25% floor).
     @Published public private(set) var isBatteryPaused = false
     /// Current battery charge 0–100 when available; nil on desktops without a battery.
@@ -925,6 +928,11 @@ public final class WallpaperController: ObservableObject {
                 if self.isThrottled != shouldThrottle {
                     self.isThrottled = shouldThrottle
                     self.applyPlaybackState()
+                    if shouldThrottle {
+                        LivelyLogger.wallpaper.info("Paused wallpapers — Mac running hot")
+                    } else {
+                        LivelyLogger.wallpaper.info("Resumed wallpapers — heat eased")
+                    }
                 }
             }
     }

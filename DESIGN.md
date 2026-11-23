@@ -8,6 +8,8 @@ colors:
   card-dark: "#0B1D24"
   primary-light: "#007078"
   primary-dark: "#55CAD0"
+  primary-foreground-light: "#FFFFFF"
+  primary-foreground-dark: "#030303"
   primary-soft-light: "#43B6BB"
   primary-soft-dark: "#9FE8EA"
   foreground-light: "#0B1B20"
@@ -111,7 +113,7 @@ Lively is a **product-register** native macOS settings popover (480×560pt) for 
 | muted-foreground | oklch(0.420 0.018 210) | oklch(0.670 0.015 205) | Helper text, metadata |
 | border | oklch(0.885 0.017 195) | oklch(0.270 0.034 205) | Card strokes, dividers |
 
-**Contrast:** Core pairs pass WCAG AA (see `brand.md` contrast table). Do not lighten muted text below verified ratios.
+**Contrast:** Core pairs pass WCAG AA (see `brand.md` contrast table). Do not lighten muted text below verified ratios. Labels on primary fills use `primary-foreground` (`LivelyBrand.onPrimary`). Dark primary `#55CAD0` is too light for a white label; light primary `#007078` may keep white.
 
 **Gradients:** `backgroundGradient` and `accentGradient` only — barely perceptible shell gradient; accent gradient for small rewards only, never under body text.
 

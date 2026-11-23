@@ -178,6 +178,7 @@ struct ScreenCardView: View {
         }
         .onReceive(wallpaperController.playbackErrors) { (targetSpaceKey, message) in
             if targetSpaceKey == space.spaceKey {
+                showPlayingBanner = false
                 showError("Playback failed: \(message)")
             }
         }
@@ -276,7 +277,6 @@ struct ScreenCardView: View {
             RoundedRectangle(cornerRadius: LivelyBrand.Radius.sm)
                 .fill(Color(nsColor: .systemOrange).opacity(0.12))
         )
-        .accessibilityElement(children: .combine)
     }
 
     private var stickyPlayingBanner: some View {
@@ -426,6 +426,7 @@ struct ScreenCardView: View {
                     Text("Scale")
                         .font(LivelyBrand.Typography.caption.weight(.semibold))
                         .foregroundStyle(LivelyBrand.mutedForeground)
+                        .accessibilityHidden(true)
 
                     Picker("Scale", selection: Binding(
                         get: { currentWallpaper.videoGravity },
@@ -447,7 +448,6 @@ struct ScreenCardView: View {
                     .font(LivelyBrand.Typography.body)
                     .frame(minHeight: LivelyBrand.Spacing.controlMin)
                 }
-                .accessibilityElement(children: .combine)
 
                 Spacer(minLength: LivelyBrand.Spacing.sm)
 

@@ -6,6 +6,12 @@ import Foundation
 @MainActor
 struct WallpaperControllerTests {
 
+    @Test func thermalPauseNoticeSaysHeatNotBattery() {
+        let notice = WallpaperController.thermalPauseNotice
+        #expect(notice.localizedCaseInsensitiveContains("hot"))
+        #expect(!notice.localizedCaseInsensitiveContains("battery"))
+    }
+
     @Test func playbackErrorBubblesToSubject() {
         let monitor = SpaceMonitor()
         let tempFile = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString + ".json")

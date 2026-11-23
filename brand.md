@@ -67,7 +67,7 @@ Dark mode:
 --card: oklch(0.170 0.024 205);
 --card-foreground: oklch(0.970 0.010 205);
 --primary: oklch(0.760 0.140 190);
---primary-foreground: oklch(0.100 0 0);
+--primary-foreground: oklch(0.100 0 0); /* near-black; do not put white on #55CAD0 */
 --secondary: oklch(0.210 0.034 205);
 --secondary-foreground: oklch(0.970 0.010 205);
 --muted: oklch(0.190 0.024 205);

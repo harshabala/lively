@@ -5,6 +5,9 @@ enum LivelyBrand {
     // Brand accents — use sparingly (active nav, primary actions, links, toggle on).
     static let primary = adaptive(light: "#007078", dark: "#55CAD0")
     static let primarySoft = adaptive(light: "#43B6BB", dark: "#9FE8EA")
+    /// Label on primary fills. Light stays white on #007078.
+    /// Dark primary-foreground is brand `oklch(0.100 0 0)`, not white on #55CAD0.
+    static let onPrimary = adaptive(light: "#FFFFFF", dark: "#030303")
     static let destructive = Color(nsColor: .systemRed)
     static let onDestructive = Color.white
     static let clearButtonBackground = destructive.opacity(0.85)
