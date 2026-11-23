@@ -76,6 +76,17 @@ enum LivelyBrand {
     }
 
     enum Motion {
+        /// Whether system Reduce Motion is active.
+        public static var isReduceMotionEnabled: Bool {
+            NSWorkspace.shared.accessibilityDisplayShouldReduceMotion
+        }
+
+        /// Motion helper returning nil animation if reduceMotion is active.
+        public static func resolved(_ animation: Animation, reduceMotion: Bool? = nil) -> Animation? {
+            let shouldReduce = reduceMotion ?? isReduceMotionEnabled
+            return shouldReduce ? nil : animation
+        }
+
         /// Press-down feedback: 120–180ms, critically damped.
         static let press      = Animation.spring(duration: 0.15, bounce: 0)
         static let fast       = Animation.spring(duration: 0.2, bounce: 0)
