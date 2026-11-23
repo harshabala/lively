@@ -112,7 +112,8 @@ public struct SettingsContainerView: View {
                 ) {
                     wallpaperController.togglePause()
                 }
-                .help(wallpaperController.isPaused ? "Resume wallpapers" : "Pause wallpapers")
+                .keyboardShortcut("p", modifiers: [.command])
+                .help(wallpaperController.isPaused ? "Resume wallpapers (⌘P)" : "Pause wallpapers (⌘P)")
                 .accessibilityLabel(wallpaperController.isPaused ? "Resume Lively" : "Pause Lively")
 
                 chromeActionButton(
@@ -122,7 +123,8 @@ public struct SettingsContainerView: View {
                 ) {
                     NSApp.terminate(nil)
                 }
-                .help("Quit Lively")
+                .keyboardShortcut("q", modifiers: [.command])
+                .help("Quit Lively (⌘Q)")
                 .accessibilityLabel("Quit Lively")
             }
         }
