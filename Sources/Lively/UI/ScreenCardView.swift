@@ -306,7 +306,7 @@ struct ScreenCardView: View {
                 showPlayingBanner = false
             } label: {
                 Image(systemName: "xmark")
-                    .font(.system(size: 10, weight: .bold))
+                    .font(.caption2.weight(.bold))
                     .foregroundStyle(LivelyBrand.mutedForeground)
                     .frame(width: 28, height: 28)
                     .contentShape(Rectangle())

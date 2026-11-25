@@ -101,7 +101,7 @@ public struct LibraryView: View {
                 } label: {
                     HStack(spacing: LivelyBrand.Spacing.xxs) {
                         Image(systemName: "plus")
-                            .font(.system(size: 12, weight: .semibold))
+                            .font(.callout.weight(.semibold))
                         Text("Add Wallpaper")
                             .font(LivelyBrand.Typography.caption.weight(.semibold))
                     }
@@ -127,7 +127,7 @@ public struct LibraryView: View {
         VStack(spacing: LivelyBrand.Spacing.md) {
             Spacer(minLength: 24)
             Image(systemName: "square.stack.3d.up")
-                .font(.system(size: 36, weight: .light))
+                .font(.largeTitle.weight(.light))
                 .foregroundStyle(LivelyBrand.mutedForeground)
             Text("No wallpapers yet")
                 .font(LivelyBrand.Typography.section)
@@ -266,11 +266,12 @@ public struct LibraryView: View {
                 addError = nil
             } label: {
                 Image(systemName: "xmark")
-                    .font(.system(size: 10, weight: .bold))
+                    .font(.caption2.weight(.bold))
                     .foregroundStyle(LivelyBrand.mutedForeground)
             }
             .buttonStyle(.plain)
             .livelyFocusRing(cornerRadius: LivelyBrand.Radius.sm)
+            .accessibilityLabel("Dismiss error")
         }
         .padding(LivelyBrand.Spacing.md)
         .background(
@@ -308,7 +309,7 @@ public struct LibraryCard: View {
                     ZStack {
                         Color(nsColor: .controlBackgroundColor)
                         Image(systemName: "film")
-                            .font(.system(size: 28))
+                            .font(.largeTitle)
                             .foregroundStyle(LivelyBrand.mutedForeground)
                     }
                     .frame(height: 140)
@@ -324,7 +325,7 @@ public struct LibraryCard: View {
                             onApply(fileURL)
                         } label: {
                             Image(systemName: "play.circle.fill")
-                                .font(.system(size: 30, weight: .regular))
+                                .font(.largeTitle)
                                 .foregroundStyle(.white)
                                 .frame(minWidth: LivelyBrand.Spacing.controlMin + 8, minHeight: LivelyBrand.Spacing.controlMin + 8)
                                 .contentShape(Circle())
@@ -338,7 +339,7 @@ public struct LibraryCard: View {
                         showRemoveConfirm = true
                     } label: {
                         Image(systemName: "trash.circle.fill")
-                            .font(.system(size: 28, weight: .regular))
+                            .font(.largeTitle)
                             .foregroundStyle(Color(nsColor: .systemRed))
                             .frame(minWidth: LivelyBrand.Spacing.controlMin + 8, minHeight: LivelyBrand.Spacing.controlMin + 8)
                             .contentShape(Circle())

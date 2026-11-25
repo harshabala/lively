@@ -41,7 +41,7 @@ public struct DisplaysView: View {
     private var displaysTipStrip: some View {
         HStack(alignment: .top, spacing: LivelyBrand.Spacing.sm) {
             Image(systemName: "lightbulb.fill")
-                .font(.system(size: 12, weight: .semibold))
+                .font(.callout.weight(.semibold))
                 .foregroundStyle(LivelyBrand.primary)
                 .padding(.top, 2)
 
@@ -56,7 +56,7 @@ public struct DisplaysView: View {
                 preferences.hasDismissedDisplaysTip = true
             } label: {
                 Image(systemName: "xmark")
-                    .font(.system(size: 10, weight: .bold))
+                    .font(.caption2.weight(.bold))
                     .foregroundStyle(LivelyBrand.mutedForeground)
                     .frame(width: 28, height: 28)
                     .contentShape(Rectangle())

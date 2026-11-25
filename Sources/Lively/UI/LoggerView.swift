@@ -80,7 +80,7 @@ public struct LoggerView: View {
                     HStack(spacing: 5) {
                         if isCopied {
                             Image(systemName: "checkmark")
-                                .font(.system(size: 11, weight: .bold))
+                                .font(.caption.weight(.bold))
                                 .foregroundStyle(LivelyBrand.foreground)
                         }
                         Text(isCopied ? "Copied" : "Copy Logs")
@@ -106,7 +106,7 @@ public struct LoggerView: View {
                 } label: {
                     HStack(spacing: 6) {
                         Image(systemName: "arrow.down.to.line")
-                            .font(.system(size: 11, weight: .semibold))
+                            .font(.caption.weight(.semibold))
                         Text("Download Logs")
                             .font(LivelyBrand.Typography.caption.weight(.semibold))
                     }
@@ -140,7 +140,7 @@ public struct LoggerView: View {
     private var emptyState: some View {
         VStack(spacing: LivelyBrand.Spacing.sm) {
             Image(systemName: "text.alignleft")
-                .font(.system(size: 28, weight: .light))
+                .font(.largeTitle.weight(.light))
                 .foregroundStyle(LivelyBrand.mutedForeground)
             Text("No activity yet")
                 .font(LivelyBrand.Typography.body.weight(.semibold))
@@ -208,7 +208,7 @@ public struct LoggerView: View {
                         Text(isExpanded ? "Hide Logs" : "View Logs")
                             .font(LivelyBrand.Typography.caption)
                         Image(systemName: isExpanded ? "chevron.up" : "chevron.down")
-                            .font(.system(size: 10, weight: .bold))
+                            .font(.caption2.weight(.bold))
                     }
                     .padding(.horizontal, 12)
                     .padding(.vertical, 8)

@@ -150,7 +150,7 @@ public struct SettingsContainerView: View {
             VStack(spacing: LivelyBrand.Spacing.xxs) {
                 HStack(spacing: LivelyBrand.Spacing.xxs) {
                     Image(systemName: systemImage)
-                        .font(.system(size: 13, weight: isSelected ? .semibold : .regular))
+                        .font(.body.weight(isSelected ? .semibold : .regular))
                     Text(title)
                         .font(LivelyBrand.Typography.nav)
                 }
@@ -183,7 +183,7 @@ public struct SettingsContainerView: View {
             HStack(spacing: LivelyBrand.Spacing.xxs) {
                 if let systemImage {
                     Image(systemName: systemImage)
-                        .font(.system(size: 12, weight: .semibold))
+                        .font(.callout.weight(.semibold))
                 }
                 Text(title)
                     .font(LivelyBrand.Typography.caption.weight(.semibold))

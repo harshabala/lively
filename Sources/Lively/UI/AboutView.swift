@@ -24,7 +24,7 @@ public struct AboutView: View {
                             .frame(width: 48, height: 48)
                     } else {
                         Image(systemName: "play.tv.fill")
-                            .font(.system(size: 28, weight: .semibold))
+                            .font(.largeTitle.weight(.semibold))
                             .foregroundStyle(LivelyBrand.primary)
                     }
                 }
@@ -111,7 +111,7 @@ public struct AboutView: View {
         } label: {
             HStack(spacing: LivelyBrand.Spacing.md) {
                 Image(systemName: systemImage)
-                    .font(.system(size: 13, weight: .semibold))
+                    .font(.body.weight(.semibold))
                     .foregroundStyle(LivelyBrand.primary)
                     .frame(width: 20)
                 Text(title)
@@ -119,7 +119,7 @@ public struct AboutView: View {
                     .foregroundStyle(LivelyBrand.foreground)
                 Spacer()
                 Image(systemName: "arrow.up.right")
-                    .font(.system(size: 11, weight: .semibold))
+                    .font(.caption.weight(.semibold))
                     .foregroundStyle(LivelyBrand.mutedForeground)
             }
             .padding(.horizontal, LivelyBrand.Spacing.lg)

@@ -17,7 +17,7 @@ struct WelcomeSheet: View {
                         .clipShape(RoundedRectangle(cornerRadius: 10))
                 } else {
                     Image(systemName: "play.tv.fill")
-                        .font(.system(size: 28, weight: .semibold))
+                        .font(.largeTitle.weight(.semibold))
                         .foregroundStyle(LivelyBrand.primary)
                 }
                 VStack(alignment: .leading, spacing: 2) {
@@ -85,7 +85,7 @@ struct WelcomeSheet: View {
     private func bullet(icon: String, text: String) -> some View {
         HStack(alignment: .top, spacing: LivelyBrand.Spacing.sm) {
             Image(systemName: icon)
-                .font(.system(size: 12, weight: .semibold))
+                .font(.callout.weight(.semibold))
                 .foregroundStyle(LivelyBrand.primary)
                 .frame(width: 18)
             Text(text)

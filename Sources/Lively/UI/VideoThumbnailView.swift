@@ -88,7 +88,7 @@ struct VideoThumbnailView: View {
                     .overlay {
                         VStack(spacing: 4) {
                             Image(systemName: "film")
-                                .font(.system(size: showLabels ? 18 : 12))
+                                .font(showLabels ? .title3 : .caption)
                                 .foregroundStyle(LivelyBrand.mutedForeground)
                             if showLabels {
                                 Text("No preview")

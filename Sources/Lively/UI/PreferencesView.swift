@@ -119,7 +119,7 @@ public struct PreferencesView: View {
         } label: {
             HStack(spacing: LivelyBrand.Spacing.sm) {
                 Image(systemName: item.systemImage)
-                    .font(.system(size: 12, weight: .semibold))
+                    .font(.callout.weight(.semibold))
                     .frame(width: 16)
                     .foregroundStyle(isSelected ? LivelyBrand.primary : LivelyBrand.mutedForeground)
 

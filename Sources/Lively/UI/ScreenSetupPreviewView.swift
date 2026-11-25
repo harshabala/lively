@@ -32,7 +32,7 @@ struct ScreenSetupPreviewView: View {
                             .foregroundStyle(LivelyBrand.onPrimary)
                         Spacer()
                         Image(systemName: "chevron.right")
-                            .font(.system(size: 11, weight: .semibold))
+                            .font(.caption.weight(.semibold))
                             .foregroundStyle(LivelyBrand.onPrimary)
                     }
                     .padding(.horizontal, LivelyBrand.Spacing.lg)
@@ -53,7 +53,7 @@ struct ScreenSetupPreviewView: View {
     private var emptyState: some View {
         VStack(spacing: LivelyBrand.Spacing.sm) {
             Image(systemName: "display.2")
-                .font(.system(size: 28, weight: .light))
+                .font(.largeTitle.weight(.light))
                 .foregroundStyle(LivelyBrand.mutedForeground)
             Text("No displays detected")
                 .font(LivelyBrand.Typography.body.weight(.semibold))
@@ -163,11 +163,11 @@ private struct DisplayPreviewCard: View {
                             .fill(LivelyBrand.controlFill)
                         VStack(spacing: 4) {
                             Image(systemName: "photo")
-                                .font(.system(size: 14, weight: .light))
+                                .font(.headline.weight(.light))
                                 .foregroundStyle(LivelyBrand.mutedForeground)
                             if frame.height > 56 {
                                 Text("No wallpaper")
-                                    .font(.system(size: 11, weight: .medium))
+                                    .font(.caption.weight(.medium))
                                     .foregroundStyle(LivelyBrand.mutedForeground)
                             }
                         }

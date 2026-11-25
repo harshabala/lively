@@ -52,19 +52,19 @@ enum LivelyBrand {
     /// → `body` → `caption` → `footnote` / `mono`.
     enum Typography {
         /// Top chrome: Displays / Settings tab labels.
-        static let nav = Font.system(size: 14, weight: .semibold)
+        static let nav = Font.headline
         /// Card / pane primary titles (display names).
-        static let title = Font.system(size: 15, weight: .semibold)
+        static let title = Font.title3.weight(.semibold)
         /// Settings pane section titles, card section labels.
-        static let section = Font.system(size: 13, weight: .semibold)
-        static let body = Font.system(size: 13, weight: .regular)
-        static let caption = Font.system(size: 12, weight: .medium)
-        static let footnote = Font.system(size: 11, weight: .regular)
-        static let mono = Font.system(size: 11, weight: .medium, design: .monospaced)
-        static let badge = Font.system(size: 11, weight: .bold)
-        static let iconSmall = Font.system(size: 16, weight: .medium)
-        static let iconControl = Font.system(size: 14, weight: .medium)
-        static let iconLarge = Font.system(size: 28, weight: .light)
+        static let section = Font.body.weight(.semibold)
+        static let body = Font.body
+        static let caption = Font.callout.weight(.medium)
+        static let footnote = Font.footnote
+        static let mono = Font.system(.footnote, design: .monospaced, weight: .medium)
+        static let badge = Font.caption.weight(.bold)
+        static let iconSmall = Font.title3.weight(.medium)
+        static let iconControl = Font.headline.weight(.medium)
+        static let iconLarge = Font.largeTitle.weight(.light)
     }
 
     enum Shadow {
